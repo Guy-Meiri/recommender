@@ -36,6 +36,13 @@ export default function ListPage() {
       setLoading(false);
     };
     checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -99,8 +106,13 @@ export default function ListPage() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+      // The auth state listener will automatically update the user state
+      // and redirect to auth screen
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const getCategoryIcon = () => {

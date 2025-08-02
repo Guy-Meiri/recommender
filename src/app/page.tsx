@@ -26,6 +26,13 @@ export default function Home() {
       setLoading(false);
     };
     checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -67,7 +74,12 @@ export default function Home() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      // The auth state listener will automatically update the user state
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   if (loading) {
