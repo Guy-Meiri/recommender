@@ -27,6 +27,14 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
 
   return (
     <>
+      {/* Backdrop overlay - positioned outside header to cover full screen */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* App Bar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
@@ -50,12 +58,12 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
           </nav>
 
           {/* Desktop User Menu */}
-          <div className="hidden md:flex items-center space-x-4 ml-auto">
+          <div className="hidden md:flex items-center space-x-2 ml-auto">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleTheme}
-              className="gap-2"
+              className="gap-2 px-3 py-2 h-9 rounded-md hover:bg-accent hover:text-accent-foreground"
             >
               {theme === 'dark' ? (
                 <>
@@ -69,7 +77,7 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
                 </>
               )}
             </Button>
-            <div className="flex items-center space-x-2 text-sm">
+            <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-md bg-muted/50">
               <User className="h-4 w-4" />
               <span className="text-muted-foreground">{user.email}</span>
             </div>
@@ -77,7 +85,7 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
               variant="ghost"
               size="sm"
               onClick={onSignOut}
-              className="gap-2"
+              className="gap-2 px-3 py-2 h-9 rounded-md hover:bg-accent hover:text-accent-foreground"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
@@ -102,50 +110,50 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t bg-background">
+          <div className="absolute top-full left-0 right-0 z-50 md:hidden border-t bg-background shadow-lg">
             <nav className="container py-4 space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <Link
                   href="/"
-                  className="block text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60"
+                  className="block text-sm font-medium transition-colors hover:text-foreground/80 text-foreground/60 px-3 py-2 rounded-md hover:bg-accent"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   My Lists
                 </Link>
               </div>
               
-              <div className="border-t pt-4 space-y-3">
+              <div className="border-t pt-4 space-y-2">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleTheme}
-                  className="gap-2 w-full justify-start"
+                  className="gap-2 w-full justify-start px-3 py-2 h-10 rounded-md hover:bg-accent hover:text-accent-foreground"
                 >
-                  {theme === 'dark' ? (
-                    <>
-                      <Sun className="h-4 w-4" />
-                      Switch to Light Mode
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="h-4 w-4" />
-                      Switch to Dark Mode
-                    </>
-                  )}
-                </Button>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>{user.email}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    onSignOut();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="gap-2 w-full justify-start"
-                >
+                    {theme === 'dark' ? (
+                      <>
+                        <Sun className="h-4 w-4" />
+                        Switch to Light Mode
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="h-4 w-4" />
+                        Switch to Dark Mode
+                      </>
+                    )}
+                  </Button>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground px-3 py-2 rounded-md bg-muted/30">
+                    <User className="h-4 w-4" />
+                    <span>{user.email}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      onSignOut();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="gap-2 w-full justify-start px-3 py-2 h-10 rounded-md hover:bg-accent hover:text-accent-foreground"
+                  >
                   <LogOut className="h-4 w-4" />
                   Sign Out
                 </Button>
