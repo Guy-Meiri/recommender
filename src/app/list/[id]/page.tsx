@@ -8,61 +8,74 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star } from 'lucide-react';
 import { List, ListItem } from '@/types';
-import { storage } from '@/lib/storage';
+import { supabaseStorage } from '@/lib/supabase-storage';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 import { tmdbApi } from '@/lib/tmdb';
 import { SearchMoviesDialog } from '@/components/SearchMoviesDialog';
+import { Auth } from '@/components/Auth';
 
 export default function ListPage() {
   const params = useParams();
   const router = useRouter();
   const listId = params.id as string;
 
+  const [user, setUser] = useState<User | null>(null);
   const [list, setList] = useState<List | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadList = () => {
-      try {
-        const foundList = storage.getList(listId);
-        setList(foundList);
-      } catch (error) {
-        console.error('Error loading list:', error);
-      } finally {
-        setLoading(false);
-      }
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
     };
+    checkUser();
+  }, []);
 
-    if (listId) {
-      loadList();
+  useEffect(() => {
+    if (user && listId) {
+      const loadListData = async () => {
+        try {
+          const foundList = await supabaseStorage.getList(listId);
+          setList(foundList);
+        } catch (error) {
+          console.error('Error loading list:', error);
+        }
+      };
+      loadListData();
     }
-  }, [listId]);
+  }, [user, listId]);
 
-  const handleAddItem = (newItem: ListItem) => {
+  const handleAddItem = async (newItem: ListItem) => {
     if (!list) return;
 
-    const updatedList = {
-      ...list,
-      items: [...list.items, newItem]
-    };
-
-    const saved = storage.updateList(list.id, updatedList);
-    if (saved) {
-      setList(saved);
+    const success = await supabaseStorage.addItemToList(list.id, newItem);
+    if (success) {
+      // Reload the list to get updated data
+      const updatedList = await supabaseStorage.getList(list.id);
+      if (updatedList) {
+        setList(updatedList);
+      }
     }
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
     if (!list) return;
 
     if (window.confirm('Remove this item from the list?')) {
-      const updatedList = {
-        ...list,
-        items: list.items.filter(item => item.id !== itemId)
-      };
-
-      const saved = storage.updateList(list.id, updatedList);
-      if (saved) {
-        setList(saved);
+      // Find the item to get its tmdbId
+      const item = list.items.find(i => i.id === itemId);
+      if (item) {
+        const success = await supabaseStorage.removeItemFromList(list.id, item.tmdbId);
+        if (success) {
+          // Update local state
+          setList({
+            ...list,
+            items: list.items.filter(item => item.id !== itemId)
+          });
+        }
       }
     }
   };
@@ -95,12 +108,14 @@ export default function ListPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-8 bg-background">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center">Loading...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Auth onAuthStateChange={setUser} />;
   }
 
   if (!list) {
@@ -154,7 +169,11 @@ export default function ListPage() {
 
         {/* Add Item Button */}
         <div className="flex justify-center">
-          <SearchMoviesDialog onAddItem={handleAddItem}>
+          <SearchMoviesDialog 
+            listId={list.id}
+            category={list.category}
+            onItemAdded={handleAddItem}
+          >
             <Button size="lg" className="gap-2">
               <Plus className="h-5 w-5" />
               Add Movies & TV Shows

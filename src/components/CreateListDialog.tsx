@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { List } from '@/types';
-import { storage } from '@/lib/storage';
+import { supabaseStorage } from '@/lib/supabase-storage';
 
 interface CreateListDialogProps {
   onListCreated: (list: List) => void;
@@ -34,18 +34,19 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
 
     setIsCreating(true);
     try {
-      const newList = storage.addList({
+      const newList = await supabaseStorage.addList({
         name: name.trim(),
         description: description.trim() || undefined,
-        category,
-        items: []
+        category
       });
       
-      onListCreated(newList);
-      setOpen(false);
-      setName('');
-      setDescription('');
-      setCategory('both');
+      if (newList) {
+        onListCreated(newList);
+        setOpen(false);
+        setName('');
+        setDescription('');
+        setCategory('both');
+      }
     } catch (error) {
       console.error('Error creating list:', error);
     } finally {

@@ -17,13 +17,16 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Search, Plus, Film, Tv } from 'lucide-react';
 import { TMDBSearchResult, ListItem } from '@/types';
 import { tmdbApi } from '@/lib/tmdb';
+import { supabaseStorage } from '@/lib/supabase-storage';
 
 interface SearchMoviesDialogProps {
-  onAddItem: (item: ListItem) => void;
+  listId: string;
+  category: 'movies' | 'tv' | 'both';
+  onItemAdded: (item: ListItem) => void;
   children: React.ReactNode;
 }
 
-export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogProps) {
+export function SearchMoviesDialog({ listId, category, onItemAdded, children }: SearchMoviesDialogProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TMDBSearchResult[]>([]);
@@ -52,7 +55,11 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
     }
   };
 
-  const handleAddItem = (tmdbItem: TMDBSearchResult) => {
+  const handleAddItem = async (tmdbItem: TMDBSearchResult) => {
+    // Filter based on category
+    if (category === 'movies' && tmdbItem.media_type !== 'movie') return;
+    if (category === 'tv' && tmdbItem.media_type !== 'tv') return;
+
     const listItem: ListItem = {
       id: crypto.randomUUID(),
       tmdbId: tmdbItem.id,
@@ -65,12 +72,18 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
       addedAt: new Date()
     };
 
-    onAddItem(listItem);
-    setOpen(false);
-    setQuery('');
-    setResults([]);
-    setHasSearched(false);
-    setError(null);
+    // Add to Supabase
+    const success = await supabaseStorage.addItemToList(listId, listItem);
+    if (success) {
+      onItemAdded(listItem);
+      setOpen(false);
+      setQuery('');
+      setResults([]);
+      setHasSearched(false);
+      setError(null);
+    } else {
+      setError('Failed to add item to list. Please try again.');
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -97,9 +110,9 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Add Movies & TV Shows</DialogTitle>
+          <DialogTitle>Add {category === 'movies' ? 'Movies' : category === 'tv' ? 'TV Shows' : 'Movies & TV Shows'}</DialogTitle>
           <DialogDescription>
-            Search for movies and TV shows to add to your list.
+            Search for {category === 'movies' ? 'movies' : category === 'tv' ? 'TV shows' : 'movies and TV shows'} to add to your list.
           </DialogDescription>
         </DialogHeader>
         
@@ -138,7 +151,13 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
 
           {results.length > 0 && (
             <div className="space-y-3 py-4">
-              {results.map((item) => (
+              {results
+                .filter(item => {
+                  if (category === 'movies') return item.media_type === 'movie';
+                  if (category === 'tv') return item.media_type === 'tv';
+                  return true; // 'both' shows all
+                })
+                .map((item) => (
                 <Card key={`${item.media_type}-${item.id}`} className="hover:shadow-sm transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex gap-4">
@@ -191,7 +210,7 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                ))}
             </div>
           )}
         </div>

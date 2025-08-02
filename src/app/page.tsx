@@ -2,30 +2,47 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, LogOut } from 'lucide-react';
 import { List } from '@/types';
-import { storage } from '@/lib/storage';
+import { supabaseStorage } from '@/lib/supabase-storage';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 import { CreateListDialog } from '@/components/CreateListDialog';
 import { ListCard } from '@/components/ListCard';
+import { Auth } from '@/components/Auth';
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null);
   const [lists, setLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadLists = () => {
-      try {
-        const storedLists = storage.getLists();
-        setLists(storedLists);
-      } catch (error) {
-        console.error('Error loading lists:', error);
-      } finally {
-        setLoading(false);
-      }
+    // Check if user is already logged in
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
     };
-
-    loadLists();
+    checkUser();
   }, []);
+
+  useEffect(() => {
+    // Load lists when user changes
+    if (user) {
+      loadLists();
+    } else {
+      setLists([]);
+    }
+  }, [user]);
+
+  const loadLists = async () => {
+    try {
+      const storedLists = await supabaseStorage.getLists();
+      setLists(storedLists);
+    } catch (error) {
+      console.error('Error loading lists:', error);
+    }
+  };
 
   const handleListCreated = (newList: List) => {
     setLists(prev => [newList, ...prev]);
@@ -35,35 +52,51 @@ export default function Home() {
     window.location.href = `/list/${listId}`;
   };
 
-  const handleDeleteList = (listId: string) => {
+  const handleDeleteList = async (listId: string) => {
     if (window.confirm('Are you sure you want to delete this list?')) {
-      const success = storage.deleteList(listId);
+      const success = await supabaseStorage.deleteList(listId);
       if (success) {
         setLists(prev => prev.filter(list => list.id !== listId));
       }
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen p-8 bg-background">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center">Loading...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">Loading...</div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Auth onAuthStateChange={setUser} />;
   }
 
   return (
     <div className="min-h-screen p-8 bg-background">
       <main className="max-w-6xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold">
-            Batata Time
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Create and manage your personalized movie and TV show recommendation lists
-          </p>
+        <div className="flex justify-between items-start">
+          <div className="text-center space-y-4 flex-1">
+            <h1 className="text-4xl font-bold">
+              Batata Time
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Create and manage your personalized movie and TV show recommendation lists
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleSignOut}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
         </div>
 
         <div className="flex justify-center">
