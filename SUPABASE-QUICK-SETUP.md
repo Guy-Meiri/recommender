@@ -1,10 +1,4 @@
-# 🚀 Quick Su**Redirect URLs** (add these o1. **Local testing**: http://localhost:3002/test-authe per line in the text area):
-```
-http://localhost:3002/auth/confirm
-http://localhost:3002/auth/callback
-https://recommender-eight.vercel.app/auth/confirm
-https://recommender-eight.vercel.app/auth/callback
-```Setup for Production
+# 🚀 Quick Supabase Setup for Production
 
 ## Your App URL: https://recommender-eight.vercel.app
 
