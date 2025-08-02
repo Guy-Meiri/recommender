@@ -30,11 +30,11 @@ Set your **Site URL** to:
 ### 3. Configure Redirect URLs
 Add these **Redirect URLs** (one per line):
 ```
-http://localhost:3000/auth/confirm
 http://localhost:3000/auth/callback
-https://recommender-eight.vercel.app/auth/confirm
 https://recommender-eight.vercel.app/auth/callback
 ```
+
+**Note**: The `/auth/callback` route handles modern Supabase email confirmation flow with `code` parameters.
 
 ### 4. **IMPORTANT: Enable Email Confirmation**
 1. Go to **Authentication** → **Settings**

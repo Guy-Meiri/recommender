@@ -35,7 +35,7 @@ export function Auth({ onAuthStateChange }: AuthProps) {
 
     try {
       if (isSignUp) {
-        const redirectUrl = `${window.location.origin}/auth/confirm`;
+        const redirectUrl = `${window.location.origin}/auth/callback`;
         console.log('🔐 Signup attempt:', { email, redirectUrl });
         
         const { data, error } = await supabase.auth.signUp({

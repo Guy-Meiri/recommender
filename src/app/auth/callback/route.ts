@@ -18,16 +18,27 @@ export async function GET(request: NextRequest) {
       
       if (!error) {
         // Successful authentication - redirect to the intended page
+        console.log('✅ Email confirmation successful');
         const redirectUrl = new URL(next, request.url);
         return NextResponse.redirect(redirectUrl);
       } else {
-        console.error('Code exchange error:', error);
+        console.error('❌ Code exchange error:', error);
+        // Return user to error page with the specific error
+        const errorUrl = new URL('/auth/auth-code-error', request.url);
+        errorUrl.searchParams.set('error', error.message);
+        return NextResponse.redirect(errorUrl);
       }
     } catch (error) {
-      console.error('Auth callback error:', error);
+      console.error('❌ Auth callback error:', error);
+      const errorUrl = new URL('/auth/auth-code-error', request.url);
+      errorUrl.searchParams.set('error', 'Authentication failed');
+      return NextResponse.redirect(errorUrl);
     }
   }
 
-  // Return the user to an error page with some instructions
-  return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
+  // No code provided - redirect to error page
+  console.error('❌ No confirmation code provided');
+  const errorUrl = new URL('/auth/auth-code-error', request.url);
+  errorUrl.searchParams.set('error', 'Invalid confirmation link');
+  return NextResponse.redirect(errorUrl);
 }
