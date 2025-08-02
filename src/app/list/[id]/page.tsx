@@ -6,13 +6,14 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star, Share2, Users, Lock } from 'lucide-react';
 import { List, ListItem } from '@/types';
 import { supabaseStorage } from '@/lib/supabase-storage';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { tmdbApi } from '@/lib/tmdb';
 import { SearchMoviesDialog } from '@/components/SearchMoviesDialog';
+import { ShareListDialog } from '@/components/ShareListDialog';
 import { Auth } from '@/components/Auth';
 
 export default function ListPage() {
@@ -67,6 +68,10 @@ export default function ListPage() {
       console.error('Error adding item to list:', error);
       alert('An error occurred while adding the item. Please try again.');
     }
+  };
+
+  const handleListUpdated = (updatedList: List) => {
+    setList(updatedList);
   };
 
   const handleRemoveItem = async (itemId: string) => {
@@ -151,42 +156,79 @@ export default function ListPage() {
           </Button>
 
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl font-bold">{list.name}</h1>
               <Badge variant="outline" className="flex items-center gap-1">
                 {getCategoryIcon()}
                 {getCategoryLabel()}
               </Badge>
+              
+              {/* Sharing Status Badge */}
+              {!list.isOwner && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  Shared with you
+                  {list.permission === 'read' && <Lock className="h-3 w-3" />}
+                </Badge>
+              )}
+              
+              {list.isOwner && list.shares && list.shares.length > 0 && (
+                <Badge variant="default" className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  Shared with {list.shares.length}
+                </Badge>
+              )}
             </div>
+            
+            {/* Owner info for shared lists */}
+            {!list.isOwner && (
+              <p className="text-sm text-muted-foreground">
+                Created by another user • {list.permission === 'write' ? 'Can edit' : 'View only'}
+              </p>
+            )}
             
             {list.description && (
               <p className="text-muted-foreground text-lg">{list.description}</p>
             )}
             
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                Created {list.createdAt.toLocaleDateString()}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Created {list.createdAt.toLocaleDateString()}
+                </div>
+                <div>
+                  {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
+                </div>
               </div>
-              <div>
-                {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
-              </div>
+              
+              {/* Share Button - Only show for owners */}
+              {list.isOwner && (
+                <ShareListDialog list={list} onListUpdated={handleListUpdated}>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </Button>
+                </ShareListDialog>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Add Item Button */}
-        <div className="flex justify-center">
-          <SearchMoviesDialog 
-            category={list.category}
-            onItemAdded={handleAddItem}
-          >
-            <Button size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
-              Add Movies & TV Shows
-            </Button>
-          </SearchMoviesDialog>
-        </div>
+        {/* Add Item Button - Only show if user has write permission */}
+        {list.permission === 'write' && (
+          <div className="flex justify-center">
+            <SearchMoviesDialog 
+              category={list.category}
+              onItemAdded={handleAddItem}
+            >
+              <Button size="lg" className="gap-2">
+                <Plus className="h-5 w-5" />
+                Add Movies & TV Shows
+              </Button>
+            </SearchMoviesDialog>
+          </div>
+        )}
 
         {/* Items Grid */}
         {list.items.length === 0 ? (
@@ -201,7 +243,7 @@ export default function ListPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
             {list.items.map((item) => (
               <Card key={item.id} className="hover:shadow-md transition-shadow group">
                 <CardContent className="p-0">
@@ -211,53 +253,58 @@ export default function ListPage() {
                         <Image
                           src={tmdbApi.getPosterUrl(item.posterPath)}
                           alt={item.title}
-                          width={300}
-                          height={450}
+                          width={200}
+                          height={300}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           {item.type === 'movie' ? (
-                            <Film className="h-12 w-12 text-muted-foreground" />
+                            <Film className="h-8 w-8 text-muted-foreground" />
                           ) : (
-                            <Tv className="h-12 w-12 text-muted-foreground" />
+                            <Tv className="h-8 w-8 text-muted-foreground" />
                           )}
                         </div>
                       )}
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleRemoveItem(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {/* Remove Button - Only show if user has write permission */}
+                    {list.permission === 'write' && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                        onClick={() => handleRemoveItem(item.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                     
                     {/* Rating Badge */}
                     {item.rating && item.rating > 0 && (
-                      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-current text-yellow-400" />
+                      <div className="absolute top-1 left-1 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                        <Star className="h-2.5 w-2.5 fill-current text-yellow-400" />
                         {item.rating.toFixed(1)}
                       </div>
                     )}
                   </div>
                   
-                  <div className="p-4 space-y-2">
-                    <h4 className="font-semibold line-clamp-2 text-sm">{item.title}</h4>
+                  <div className="p-2 space-y-1">
+                    <h4 className="font-medium line-clamp-2 text-xs leading-tight">{item.title}</h4>
                     
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         {item.type === 'movie' ? (
-                          <Film className="h-3 w-3" />
+                          <Film className="h-2.5 w-2.5" />
                         ) : (
-                          <Tv className="h-3 w-3" />
+                          <Tv className="h-2.5 w-2.5" />
                         )}
-                        {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
+                        <span className="text-xs">
+                          {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
+                        </span>
                       </div>
                       
-                      <Badge variant="secondary" className="text-xs">
-                        {item.type === 'movie' ? 'Movie' : 'TV Show'}
+                      <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                        {item.type === 'movie' ? 'Movie' : 'TV'}
                       </Badge>
                     </div>
                   </div>

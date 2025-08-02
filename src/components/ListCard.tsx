@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { List } from '@/types';
-import { Calendar, Film, Tv } from 'lucide-react';
+import { Calendar, Film, Tv, Users, Lock } from 'lucide-react';
 
 interface ListCardProps {
   list: List;
@@ -45,29 +45,50 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
               </CardDescription>
             )}
           </div>
-          <Badge variant="outline" className="flex items-center gap-1">
-            {getCategoryIcon()}
-            {getCategoryLabel()}
-          </Badge>
+          <div className="flex flex-col gap-1 items-end">
+            <Badge variant="outline" className="flex items-center gap-1">
+              {getCategoryIcon()}
+              {getCategoryLabel()}
+            </Badge>
+            
+            {/* Sharing Status */}
+            {!list.isOwner && (
+              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                <Users className="h-3 w-3" />
+                Shared
+                {list.permission === 'read' && <Lock className="h-3 w-3" />}
+              </Badge>
+            )}
+            
+            {list.isOwner && list.shares && list.shares.length > 0 && (
+              <Badge variant="default" className="flex items-center gap-1 text-xs">
+                <Users className="h-3 w-3" />
+                {list.shares.length}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 w-full">
+            {/* Only show delete button for owned lists */}
+            {list.isOwner && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteList(list.id);
+                }}
+              >
+                Delete
+              </Button>
+            )}
             <Button
-              variant="outline"
               size="sm"
-              className="flex-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteList(list.id);
-              }}
-            >
-              Delete
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1"
+              className={list.isOwner ? "flex-1" : "w-full"}
               onClick={() => onViewList(list.id)}
             >
               View List

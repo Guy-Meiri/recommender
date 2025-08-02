@@ -65,9 +65,52 @@ export interface Database {
           genre?: string[] | null;
         };
       };
+      list_shares: {
+        Row: {
+          id: string;
+          list_id: string;
+          shared_with_user_id: string;
+          shared_by_user_id: string;
+          permission: 'read' | 'write';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          list_id: string;
+          shared_with_user_id: string;
+          shared_by_user_id: string;
+          permission?: 'read' | 'write';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          list_id?: string;
+          shared_with_user_id?: string;
+          shared_by_user_id?: string;
+          permission?: 'read' | 'write';
+          created_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      search_users_by_email: {
+        Args: {
+          email_query: string;
+        };
+        Returns: {
+          id: string;
+          email: string;
+          created_at: string;
+        }[];
+      };
+      get_user_email: {
+        Args: {
+          user_id: string;
+        };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
   };
 }
