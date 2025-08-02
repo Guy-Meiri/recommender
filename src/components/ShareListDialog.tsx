@@ -18,11 +18,10 @@ import { supabaseStorage } from '@/lib/supabase-storage';
 
 interface ShareListDialogProps {
   list: List;
-  onListUpdated: (updatedList: List) => void;
   children: React.ReactNode;
 }
 
-export function ShareListDialog({ list, onListUpdated, children }: ShareListDialogProps) {
+export function ShareListDialog({ list, children }: ShareListDialogProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<'read' | 'write'>('write');
@@ -50,11 +49,7 @@ export function ShareListDialog({ list, onListUpdated, children }: ShareListDial
     const success = await supabaseStorage.shareList(list.id, emailToShare, permission);
     
     if (success) {
-      // Refresh the list to get updated sharing info
-      const updatedList = await supabaseStorage.getList(list.id);
-      if (updatedList) {
-        onListUpdated(updatedList);
-      }
+      // RTK Query will handle cache updates automatically
       setEmail('');
       setSearchResults([]);
     } else {
@@ -67,11 +62,7 @@ export function ShareListDialog({ list, onListUpdated, children }: ShareListDial
     const success = await supabaseStorage.unshareList(list.id, userId);
     
     if (success) {
-      // Refresh the list to get updated sharing info
-      const updatedList = await supabaseStorage.getList(list.id);
-      if (updatedList) {
-        onListUpdated(updatedList);
-      }
+      // RTK Query will handle cache updates automatically
     } else {
       alert('Failed to remove sharing access.');
     }

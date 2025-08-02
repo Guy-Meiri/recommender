@@ -17,11 +17,10 @@ import { Badge } from '@/components/ui/badge';
 import { useCreateListMutation } from '@/lib/api';
 
 interface CreateListDialogProps {
-  onListCreated?: () => void; // Made optional since RTK Query handles cache updates
   children: React.ReactNode;
 }
 
-export function CreateListDialog({ onListCreated, children }: CreateListDialogProps) {
+export function CreateListDialog({ children }: CreateListDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -39,10 +38,7 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
         category
       }).unwrap();
       
-      // Call the optional callback
-      onListCreated?.();
-      
-      // Reset form and close dialog
+      // Reset form and close dialog - RTK Query handles cache updates automatically
       setOpen(false);
       setName('');
       setDescription('');

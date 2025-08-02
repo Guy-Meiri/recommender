@@ -23,9 +23,9 @@ export default function ListPage() {
   const listId = params.id as string;
 
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // RTK Query hooks
+  // RTK Query hooks - all loading states are built-in
   const { data: list, isLoading: listLoading } = useGetListQuery(listId, {
     skip: !user || !listId, // Skip the query if user is not logged in or no listId
   });
@@ -37,13 +37,14 @@ export default function ListPage() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      setLoading(false);
+      setAuthLoading(false);
     };
     checkUser();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -54,14 +55,10 @@ export default function ListPage() {
 
     try {
       await addItemToList({ listId: list.id, item: newItem }).unwrap();
-      // RTK Query will automatically refetch and update the list
+      // RTK Query automatically refetches and updates the list
     } catch (error) {
       console.error('Error adding item:', error);
     }
-  };
-
-  const handleListUpdated = () => {
-    // RTK Query handles this automatically through cache invalidation
   };
 
   const handleRemoveItem = async (itemId: string) => {
@@ -73,7 +70,7 @@ export default function ListPage() {
       if (item) {
         try {
           await removeItemFromList({ listId: list.id, tmdbId: item.tmdbId }).unwrap();
-          // RTK Query will automatically update the cache
+          // RTK Query automatically updates the cache
         } catch (error) {
           console.error('Error removing item:', error);
         }
@@ -117,7 +114,7 @@ export default function ListPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">Loading...</div>
@@ -129,12 +126,12 @@ export default function ListPage() {
     return <Auth onAuthStateChange={setUser} />;
   }
 
-  if (loading) {
+  if (listLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-orange-500 mx-auto" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">Loading list...</p>
         </div>
       </div>
     );
@@ -170,7 +167,7 @@ export default function ListPage() {
             
             {/* Share Button - Only show for owners */}
             {list.isOwner === true && (
-              <ShareListDialog list={list} onListUpdated={handleListUpdated}>
+              <ShareListDialog list={list}>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <Share2 className="h-4 w-4 text-orange-500" />
                   Share

@@ -13,9 +13,9 @@ import { useGetListsQuery, useDeleteListMutation } from '@/lib/api';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // RTK Query hooks
+  // RTK Query hooks - loading states are built-in
   const { data: lists = [], isLoading: listsLoading } = useGetListsQuery(undefined, {
     skip: !user, // Skip the query if user is not logged in
   });
@@ -26,22 +26,18 @@ export default function Home() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      setLoading(false);
+      setAuthLoading(false);
     };
     checkUser();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const handleListCreated = () => {
-    // RTK Query will automatically refetch lists due to cache invalidation
-    // No manual state updates needed!
-  };
 
   const handleViewList = (listId: string) => {
     window.location.href = `/list/${listId}`;
@@ -51,7 +47,7 @@ export default function Home() {
     if (window.confirm('Are you sure you want to delete this list?')) {
       try {
         await deleteList(listId).unwrap();
-        // RTK Query will automatically update the cache
+        // RTK Query automatically updates the cache
       } catch (error) {
         console.error('Error deleting list:', error);
       }
@@ -67,7 +63,7 @@ export default function Home() {
     }
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">Loading...</div>
@@ -95,7 +91,7 @@ export default function Home() {
           </div> */}
 
           <div className="flex justify-center">
-            <CreateListDialog onListCreated={handleListCreated}>
+            <CreateListDialog>
               <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">
                 <Plus className="h-5 w-5" />
                 Create New List
