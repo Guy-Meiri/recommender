@@ -78,7 +78,7 @@ export function ShareListDialog({ list, onListUpdated, children }: ShareListDial
   };
 
   // Only show sharing option for list owners
-  if (!list.isOwner) {
+  if (list.isOwner !== true) {
     return null;
   }
 

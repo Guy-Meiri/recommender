@@ -172,7 +172,7 @@ export default function ListPage() {
               </Badge>
               
               {/* Sharing Status Badge */}
-              {!list.isOwner && (
+              {list.isOwner === false && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   Shared with you
@@ -180,7 +180,7 @@ export default function ListPage() {
                 </Badge>
               )}
               
-              {list.isOwner && list.shares && list.shares.length > 0 && (
+              {list.isOwner === true && list.shares && list.shares.length > 0 && (
                 <Badge variant="default" className="flex items-center gap-1">
                   <Users className="h-3 w-3" />
                   Shared with {list.shares.length}
@@ -189,7 +189,7 @@ export default function ListPage() {
             </div>
             
             {/* Owner info for shared lists */}
-            {!list.isOwner && (
+            {list.isOwner === false && (
               <p className="text-sm text-muted-foreground">
                 Created by another user • {list.permission === 'write' ? 'Can edit' : 'View only'}
               </p>
@@ -211,7 +211,7 @@ export default function ListPage() {
               </div>
               
               {/* Share Button - Only show for owners */}
-              {list.isOwner && (
+              {list.isOwner === true && (
                 <ShareListDialog list={list} onListUpdated={handleListUpdated}>
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
                     <Share2 className="h-4 w-4" />
@@ -224,7 +224,7 @@ export default function ListPage() {
         </div>
 
         {/* Add Item Button - Only show if user has write permission */}
-        {list.permission === 'write' && (
+        {(list.permission === 'write' || list.isOwner === true) && (
           <div className="flex justify-center">
             <SearchMoviesDialog 
               category={list.category}
@@ -276,7 +276,7 @@ export default function ListPage() {
                       )}
                     </div>
                     {/* Remove Button - Only show if user has write permission */}
-                    {list.permission === 'write' && (
+                    {(list.permission === 'write' || list.isOwner === true) && (
                       <Button
                         size="sm"
                         variant="destructive"

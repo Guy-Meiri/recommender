@@ -25,9 +25,9 @@ export interface List {
   updatedAt: Date;
   items: ListItem[];
   user_id: string;
-  isOwner: boolean;
-  permission?: 'read' | 'write';
-  shares?: ListShare[];
+  isOwner?: boolean; // Made optional for backward compatibility
+  permission?: 'read' | 'write'; // Made optional for backward compatibility
+  shares?: ListShare[]; // Made optional for backward compatibility
 }
 
 export interface ListItem {

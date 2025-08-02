@@ -40,7 +40,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <CardTitle className="text-lg">{list.name}</CardTitle>
-              {!list.isOwner && (
+              {list.isOwner === false && (
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Users className="h-3 w-3" />
                   Shared
@@ -70,7 +70,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
         <div className="flex flex-col gap-3">
           <div className="flex gap-2 w-full">
             {/* Only show delete button for owned lists */}
-            {list.isOwner && (
+            {list.isOwner === true && (
               <Button
                 variant="outline"
                 size="sm"
@@ -85,7 +85,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
             )}
             <Button
               size="sm"
-              className={list.isOwner ? "flex-1" : "w-full"}
+              className={list.isOwner === true ? "flex-1" : "w-full"}
               onClick={() => onViewList(list.id)}
             >
               View List

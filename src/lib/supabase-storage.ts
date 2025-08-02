@@ -8,12 +8,11 @@ type ListItemRow = Database['public']['Tables']['list_items']['Row'];
 type ListItemInsert = Database['public']['Tables']['list_items']['Insert'];
 type ListShareRow = Database['public']['Tables']['list_shares']['Row'];
 type ListShareInsert = Database['public']['Tables']['list_shares']['Insert'];
-type UserProfileRow = Database['public']['Views']['user_profiles']['Row'];
 
 // Helper function to convert database row to List type
 function convertDbListToList(dbList: ListRow & { 
   list_items?: ListItemRow[]; 
-  list_shares?: (ListShareRow & { user_profiles?: UserProfileRow })[]; 
+  list_shares?: ListShareRow[]; 
   user_permission?: 'read' | 'write';
   is_owner?: boolean;
 }, items: ListItem[] = [], currentUserId?: string): List {
@@ -24,14 +23,10 @@ function convertDbListToList(dbList: ListRow & {
     shared_by_user_id: share.shared_by_user_id,
     permission: share.permission,
     created_at: share.created_at,
-    user_profile: share.user_profiles ? {
-      id: share.user_profiles.id,
-      email: share.user_profiles.email,
-      created_at: share.user_profiles.created_at
-    } : undefined
+    user_profile: undefined // We'll fetch this separately when needed
   })) || [];
 
-  const isOwner = currentUserId ? dbList.user_id === currentUserId : false;
+  const isOwner = currentUserId ? dbList.user_id === currentUserId : (dbList.is_owner || false);
   const permission = dbList.user_permission || (isOwner ? 'write' : 'read');
 
   return {
@@ -70,96 +65,102 @@ export const supabaseStorage = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    // Get owned lists
-    const { data: ownedLists, error: ownedError } = await supabase
-      .from('lists')
-      .select(`
-        *,
-        list_items (
-          id,
-          tmdb_id,
-          title,
-          media_type,
-          poster_path,
-          added_at,
-          rating,
-          release_date,
-          genre
-        ),
-        list_shares (
-          id,
-          shared_with_user_id,
-          shared_by_user_id,
-          permission,
-          created_at,
-          user_profiles!list_shares_shared_with_user_id_fkey (
+    try {
+      // Get owned lists
+      const { data: ownedLists, error: ownedError } = await supabase
+        .from('lists')
+        .select(`
+          *,
+          list_items (
             id,
-            email,
+            tmdb_id,
+            title,
+            media_type,
+            poster_path,
+            added_at,
+            rating,
+            release_date,
+            genre
+          ),
+          list_shares (
+            id,
+            shared_with_user_id,
+            shared_by_user_id,
+            permission,
             created_at
           )
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    // Get shared lists
-    const { data: sharedLists, error: sharedError } = await supabase
-      .from('lists')
-      .select(`
-        *,
-        list_items (
-          id,
-          tmdb_id,
-          title,
-          media_type,
-          poster_path,
-          added_at,
-          rating,
-          release_date,
-          genre
-        ),
-        list_shares!inner (
-          id,
-          shared_with_user_id,
-          shared_by_user_id,
-          permission,
-          created_at
-        )
-      `)
-      .eq('list_shares.shared_with_user_id', user.id)
-      .order('created_at', { ascending: false });
+      // Get shared lists
+      const { data: sharedLists, error: sharedError } = await supabase
+        .from('lists')
+        .select(`
+          *,
+          list_items (
+            id,
+            tmdb_id,
+            title,
+            media_type,
+            poster_path,
+            added_at,
+            rating,
+            release_date,
+            genre
+          ),
+          list_shares!inner (
+            id,
+            shared_with_user_id,
+            shared_by_user_id,
+            permission,
+            created_at
+          )
+        `)
+        .eq('list_shares.shared_with_user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (ownedError) {
-      console.error('Error fetching owned lists:', ownedError);
+      if (ownedError) {
+        console.error('Error fetching owned lists:', ownedError);
+      }
+      if (sharedError) {
+        console.error('Error fetching shared lists:', sharedError);
+      }
+
+      const allLists = [];
+
+      // Process owned lists
+      if (ownedLists) {
+        allLists.push(...ownedLists.map(list => {
+          const items = list.list_items.map(convertDbItemToListItem);
+          return convertDbListToList({ 
+            ...list, 
+            list_shares: list.list_shares || [],
+            is_owner: true, 
+            user_permission: 'write' 
+          }, items, user.id);
+        }));
+      }
+
+      // Process shared lists
+      if (sharedLists) {
+        allLists.push(...sharedLists.map(list => {
+          const items = list.list_items.map(convertDbItemToListItem);
+          const userShare = list.list_shares.find((share: ListShareRow) => share.shared_with_user_id === user.id);
+          return convertDbListToList({ 
+            ...list, 
+            list_shares: list.list_shares || [],
+            is_owner: false, 
+            user_permission: userShare?.permission || 'read' 
+          }, items, user.id);
+        }));
+      }
+
+      return allLists;
+    } catch (error) {
+      console.error('Error in getLists:', error);
+      return [];
     }
-    if (sharedError) {
-      console.error('Error fetching shared lists:', sharedError);
-    }
-
-    const allLists = [];
-
-    // Process owned lists
-    if (ownedLists) {
-      allLists.push(...ownedLists.map(list => {
-        const items = list.list_items.map(convertDbItemToListItem);
-        return convertDbListToList({ ...list, is_owner: true, user_permission: 'write' }, items, user.id);
-      }));
-    }
-
-    // Process shared lists
-    if (sharedLists) {
-      allLists.push(...sharedLists.map(list => {
-        const items = list.list_items.map(convertDbItemToListItem);
-        const userShare = list.list_shares.find((share: ListShareRow) => share.shared_with_user_id === user.id);
-        return convertDbListToList({ 
-          ...list, 
-          is_owner: false, 
-          user_permission: userShare?.permission || 'read' 
-        }, items, user.id);
-      }));
-    }
-
-    return allLists;
   },
 
   // Get a specific list by ID (owned or shared)
