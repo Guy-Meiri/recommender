@@ -35,15 +35,28 @@ export function Auth({ onAuthStateChange }: AuthProps) {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const redirectUrl = `${window.location.origin}/auth/confirm`;
+        console.log('🔐 Signup attempt:', { email, redirectUrl });
+        
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/confirm`
+            emailRedirectTo: redirectUrl
           }
         });
+        
+        console.log('🔐 Signup response:', { data, error });
+        
         if (error) throw error;
-        setMessage('Check your email for the confirmation link!');
+        
+        if (data.user && !data.session) {
+          setMessage('Check your email for the confirmation link!');
+          console.log('✅ User created, confirmation email should be sent');
+        } else if (data.session) {
+          setMessage('Account created and logged in successfully!');
+          console.log('✅ User created and auto-logged in');
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
