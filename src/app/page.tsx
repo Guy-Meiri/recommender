@@ -3,20 +3,23 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader2 } from 'lucide-react';
-import { List } from '@/types';
-import { supabaseStorage } from '@/lib/supabase-storage';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { CreateListDialog } from '@/components/CreateListDialog';
 import { ListCard } from '@/components/ListCard';
 import { Auth } from '@/components/Auth';
 import { AppBar } from '@/components/AppBar';
+import { useGetListsQuery, useDeleteListMutation } from '@/lib/api';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
-  const [lists, setLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
-  const [listsLoading, setListsLoading] = useState(false);
+
+  // RTK Query hooks
+  const { data: lists = [], isLoading: listsLoading } = useGetListsQuery(undefined, {
+    skip: !user, // Skip the query if user is not logged in
+  });
+  const [deleteList] = useDeleteListMutation();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -35,29 +38,9 @@ export default function Home() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    // Load lists when user changes
-    if (user) {
-      loadLists();
-    } else {
-      setLists([]);
-    }
-  }, [user]);
-
-  const loadLists = async () => {
-    try {
-      setListsLoading(true);
-      const storedLists = await supabaseStorage.getLists();
-      setLists(storedLists);
-    } catch (error) {
-      console.error('Error loading lists:', error);
-    } finally {
-      setListsLoading(false);
-    }
-  };
-
-  const handleListCreated = (newList: List) => {
-    setLists(prev => [newList, ...prev]);
+  const handleListCreated = () => {
+    // RTK Query will automatically refetch lists due to cache invalidation
+    // No manual state updates needed!
   };
 
   const handleViewList = (listId: string) => {
@@ -66,9 +49,11 @@ export default function Home() {
 
   const handleDeleteList = async (listId: string) => {
     if (window.confirm('Are you sure you want to delete this list?')) {
-      const success = await supabaseStorage.deleteList(listId);
-      if (success) {
-        setLists(prev => prev.filter(list => list.id !== listId));
+      try {
+        await deleteList(listId).unwrap();
+        // RTK Query will automatically update the cache
+      } catch (error) {
+        console.error('Error deleting list:', error);
       }
     }
   };

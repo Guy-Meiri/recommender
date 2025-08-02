@@ -93,7 +93,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4 text-orange-500" />
-              <span>{list.createdAt.toLocaleDateString()}</span>
+              <span>{new Date(list.createdAt).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="font-medium">{list.items.length}</span>

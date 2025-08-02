@@ -21,8 +21,8 @@ export interface List {
   name: string;
   description?: string;
   category: 'movies' | 'tv' | 'both';
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // Changed from Date to string (ISO format)
+  updatedAt: string; // Changed from Date to string (ISO format)
   items: ListItem[];
   user_id: string;
   isOwner?: boolean; // Made optional for backward compatibility
@@ -39,7 +39,7 @@ export interface ListItem {
   releaseDate?: string;
   rating?: number;
   genre?: string[];
-  addedAt: Date;
+  addedAt: string; // Changed from Date to string (ISO format)
 }
 
 export interface TMDBSearchResult {

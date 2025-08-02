@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star, Share2, Users, Lock, Loader2 } from 'lucide-react';
-import { List, ListItem } from '@/types';
-import { supabaseStorage } from '@/lib/supabase-storage';
+import { ListItem } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { tmdbApi } from '@/lib/tmdb';
@@ -16,6 +15,7 @@ import { SearchMoviesDialog } from '@/components/SearchMoviesDialog';
 import { ShareListDialog } from '@/components/ShareListDialog';
 import { Auth } from '@/components/Auth';
 import { AppBar } from '@/components/AppBar';
+import { useGetListQuery, useAddItemToListMutation, useRemoveItemFromListMutation } from '@/lib/api';
 
 export default function ListPage() {
   const params = useParams();
@@ -23,10 +23,14 @@ export default function ListPage() {
   const listId = params.id as string;
 
   const [user, setUser] = useState<User | null>(null);
-  const [list, setList] = useState<List | null>(null);
   const [loading, setLoading] = useState(true);
-  const [listLoading, setListLoading] = useState(true);
-  const [addingItem, setAddingItem] = useState(false);
+
+  // RTK Query hooks
+  const { data: list, isLoading: listLoading } = useGetListQuery(listId, {
+    skip: !user || !listId, // Skip the query if user is not logged in or no listId
+  });
+  const [addItemToList, { isLoading: addingItem }] = useAddItemToListMutation();
+  const [removeItemFromList] = useRemoveItemFromListMutation();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -45,45 +49,19 @@ export default function ListPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user && listId) {
-      const loadListData = async () => {
-        try {
-          setListLoading(true);
-          const foundList = await supabaseStorage.getList(listId);
-          setList(foundList);
-        } catch (error) {
-          console.error('Error loading list:', error);
-        } finally {
-          setListLoading(false);
-        }
-      };
-      loadListData();
-    }
-  }, [user, listId]);
-
   const handleAddItem = async (newItem: ListItem) => {
     if (!list) return;
 
     try {
-      setAddingItem(true);
-      const success = await supabaseStorage.addItemToList(list.id, newItem);
-      if (success) {
-        // Reload the list to get updated data
-        const updatedList = await supabaseStorage.getList(list.id);
-        if (updatedList) {
-          setList(updatedList);
-        }
-      }
+      await addItemToList({ listId: list.id, item: newItem }).unwrap();
+      // RTK Query will automatically refetch and update the list
     } catch (error) {
       console.error('Error adding item:', error);
-    } finally {
-      setAddingItem(false);
     }
   };
 
-  const handleListUpdated = (updatedList: List) => {
-    setList(updatedList);
+  const handleListUpdated = () => {
+    // RTK Query handles this automatically through cache invalidation
   };
 
   const handleRemoveItem = async (itemId: string) => {
@@ -93,13 +71,11 @@ export default function ListPage() {
       // Find the item to get its tmdbId
       const item = list.items.find(i => i.id === itemId);
       if (item) {
-        const success = await supabaseStorage.removeItemFromList(list.id, item.tmdbId);
-        if (success) {
-          // Update local state
-          setList({
-            ...list,
-            items: list.items.filter(item => item.id !== itemId)
-          });
+        try {
+          await removeItemFromList({ listId: list.id, tmdbId: item.tmdbId }).unwrap();
+          // RTK Query will automatically update the cache
+        } catch (error) {
+          console.error('Error removing item:', error);
         }
       }
     }
@@ -360,7 +336,7 @@ export default function ListPage() {
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4 text-orange-500" />
-                  Created {list.createdAt.toLocaleDateString()}
+                  Created {new Date(list.createdAt).toLocaleDateString()}
                 </div>
                 <div>
                   {list.items.length} {list.items.length === 1 ? 'item' : 'items'}

@@ -34,8 +34,8 @@ function convertDbListToList(dbList: ListRow & {
     name: dbList.name,
     description: dbList.description || undefined,
     category: dbList.category,
-    createdAt: new Date(dbList.created_at),
-    updatedAt: new Date(dbList.created_at), // Using created_at for now, we can add updated_at later
+    createdAt: dbList.created_at, // Return ISO string directly
+    updatedAt: dbList.created_at, // Using created_at for now, we can add updated_at later
     items,
     user_id: dbList.user_id,
     isOwner,
@@ -52,7 +52,7 @@ function convertDbItemToListItem(dbItem: ListItemRow): ListItem {
     type: dbItem.media_type,
     title: dbItem.title,
     posterPath: dbItem.poster_path || undefined,
-    addedAt: new Date(dbItem.added_at),
+    addedAt: dbItem.added_at, // Return ISO string directly
     rating: dbItem.rating || undefined,
     releaseDate: dbItem.release_date || undefined,
     genre: dbItem.genre || []

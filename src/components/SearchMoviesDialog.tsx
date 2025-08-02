@@ -72,7 +72,7 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
         releaseDate: tmdbItem.release_date || tmdbItem.first_air_date,
         rating: tmdbItem.vote_average,
         genre: [], // We'll populate this later if needed
-        addedAt: new Date()
+        addedAt: new Date().toISOString() // Convert to ISO string
       };
 
       // Let the parent component handle adding to Supabase

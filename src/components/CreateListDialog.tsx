@@ -14,11 +14,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { List } from '@/types';
-import { supabaseStorage } from '@/lib/supabase-storage';
+import { useCreateListMutation } from '@/lib/api';
 
 interface CreateListDialogProps {
-  onListCreated: (list: List) => void;
+  onListCreated?: () => void; // Made optional since RTK Query handles cache updates
   children: React.ReactNode;
 }
 
@@ -27,30 +26,29 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<'movies' | 'tv' | 'both'>('both');
-  const [isCreating, setIsCreating] = useState(false);
+  
+  const [createList, { isLoading: isCreating }] = useCreateListMutation();
 
   const handleCreate = async () => {
     if (!name.trim()) return;
 
-    setIsCreating(true);
     try {
-      const newList = await supabaseStorage.addList({
+      await createList({
         name: name.trim(),
         description: description.trim() || undefined,
         category
-      });
+      }).unwrap();
       
-      if (newList) {
-        onListCreated(newList);
-        setOpen(false);
-        setName('');
-        setDescription('');
-        setCategory('both');
-      }
+      // Call the optional callback
+      onListCreated?.();
+      
+      // Reset form and close dialog
+      setOpen(false);
+      setName('');
+      setDescription('');
+      setCategory('both');
     } catch (error) {
       console.error('Error creating list:', error);
-    } finally {
-      setIsCreating(false);
     }
   };
 
