@@ -34,7 +34,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="hover:shadow-md transition-shadow cursor-pointer w-full max-w-sm">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1">

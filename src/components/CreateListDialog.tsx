@@ -64,7 +64,7 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] w-[95vw]">
         <DialogHeader>
           <DialogTitle>Create New List</DialogTitle>
           <DialogDescription>
@@ -94,12 +94,12 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
           </div>
           <div className="grid gap-2">
             <Label>Category</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {categories.map((cat) => (
                 <Badge
                   key={cat.value}
                   variant={category === cat.value ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer whitespace-nowrap"
                   onClick={() => !isCreating && setCategory(cat.value)}
                 >
                   {cat.label}
