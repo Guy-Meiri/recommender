@@ -32,8 +32,7 @@ export default function Home() {
   };
 
   const handleViewList = (listId: string) => {
-    // TODO: Navigate to list page
-    console.log('View list:', listId);
+    window.location.href = `/list/${listId}`;
   };
 
   const handleDeleteList = (listId: string) => {

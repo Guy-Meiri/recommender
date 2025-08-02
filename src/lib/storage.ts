@@ -92,5 +92,33 @@ export const storage = {
   getList: (listId: string): List | null => {
     const lists = storage.getLists();
     return lists.find(list => list.id === listId) || null;
+  },
+
+  // Add item to a list
+  addItemToList: (listId: string, item: ListItem): List | null => {
+    const lists = storage.getLists();
+    const listIndex = lists.findIndex(list => list.id === listId);
+    
+    if (listIndex === -1) return null;
+    
+    lists[listIndex].items.push(item);
+    lists[listIndex].updatedAt = new Date();
+    
+    storage.saveLists(lists);
+    return lists[listIndex];
+  },
+
+  // Remove item from a list
+  removeItemFromList: (listId: string, itemId: string): List | null => {
+    const lists = storage.getLists();
+    const listIndex = lists.findIndex(list => list.id === listId);
+    
+    if (listIndex === -1) return null;
+    
+    lists[listIndex].items = lists[listIndex].items.filter(item => item.id !== itemId);
+    lists[listIndex].updatedAt = new Date();
+    
+    storage.saveLists(lists);
+    return lists[listIndex];
   }
 };
