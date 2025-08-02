@@ -2,12 +2,6 @@ import { List, ListItem } from '@/types';
 
 const LISTS_STORAGE_KEY = 'movie-tv-lists';
 
-interface StoredList extends Omit<List, 'createdAt' | 'updatedAt' | 'items'> {
-  createdAt: string;
-  updatedAt: string;
-  items: Array<Omit<ListItem, 'addedAt'> & { addedAt: string }>;
-}
-
 export const storage = {
   // Get all lists from localStorage
   getLists: (): List[] => {
@@ -16,17 +10,9 @@ export const storage = {
       const stored = localStorage.getItem(LISTS_STORAGE_KEY);
       if (!stored) return [];
       
-      const lists: StoredList[] = JSON.parse(stored);
-      // Convert date strings back to Date objects
-      return lists.map((list) => ({
-        ...list,
-        createdAt: new Date(list.createdAt),
-        updatedAt: new Date(list.updatedAt),
-        items: list.items.map((item) => ({
-          ...item,
-          addedAt: new Date(item.addedAt)
-        }))
-      }));
+      const lists: List[] = JSON.parse(stored);
+      // Data is already in the correct format (ISO strings)
+      return lists;
     } catch (error) {
       console.error('Error loading lists from storage:', error);
       return [];
@@ -45,11 +31,12 @@ export const storage = {
 
   // Add a new list
   addList: (list: Omit<List, 'id' | 'createdAt' | 'updatedAt'>): List => {
+    const now = new Date().toISOString();
     const newList: List = {
       ...list,
       id: crypto.randomUUID(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
       items: []
     };
 
@@ -70,7 +57,7 @@ export const storage = {
     lists[listIndex] = {
       ...lists[listIndex],
       ...updates,
-      updatedAt: new Date()
+      updatedAt: new Date().toISOString()
     };
     
     storage.saveLists(lists);
@@ -102,7 +89,7 @@ export const storage = {
     if (listIndex === -1) return null;
     
     lists[listIndex].items.push(item);
-    lists[listIndex].updatedAt = new Date();
+    lists[listIndex].updatedAt = new Date().toISOString();
     
     storage.saveLists(lists);
     return lists[listIndex];
@@ -116,7 +103,7 @@ export const storage = {
     if (listIndex === -1) return null;
     
     lists[listIndex].items = lists[listIndex].items.filter(item => item.id !== itemId);
-    lists[listIndex].updatedAt = new Date();
+    lists[listIndex].updatedAt = new Date().toISOString();
     
     storage.saveLists(lists);
     return lists[listIndex];
