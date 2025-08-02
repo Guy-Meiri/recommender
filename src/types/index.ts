@@ -36,6 +36,7 @@ export interface ListItem {
   type: 'movie' | 'tv';
   title: string;
   posterPath?: string;
+  backdropPath?: string;
   releaseDate?: string;
   rating?: number;
   genre?: string[];
@@ -47,6 +48,7 @@ export interface TMDBSearchResult {
   title?: string; // for movies
   name?: string;  // for TV shows
   poster_path?: string;
+  backdrop_path?: string;
   release_date?: string; // for movies
   first_air_date?: string; // for TV shows
   vote_average?: number;

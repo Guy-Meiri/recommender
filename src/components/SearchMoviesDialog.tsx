@@ -69,6 +69,7 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
         type: tmdbItem.media_type,
         title: tmdbItem.title || tmdbItem.name || 'Unknown Title',
         posterPath: tmdbItem.poster_path,
+        backdropPath: tmdbItem.backdrop_path,
         releaseDate: tmdbItem.release_date || tmdbItem.first_air_date,
         rating: tmdbItem.vote_average,
         genre: [], // We'll populate this later if needed

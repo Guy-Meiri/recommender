@@ -35,6 +35,7 @@ export interface Database {
           title: string;
           media_type: 'movie' | 'tv';
           poster_path: string | null;
+          backdrop_path: string | null;
           added_at: string;
           rating: number | null;
           release_date: string | null;
@@ -47,6 +48,7 @@ export interface Database {
           title: string;
           media_type: 'movie' | 'tv';
           poster_path?: string | null;
+          backdrop_path?: string | null;
           added_at?: string;
           rating?: number | null;
           release_date?: string | null;
@@ -59,6 +61,7 @@ export interface Database {
           title?: string;
           media_type?: 'movie' | 'tv';
           poster_path?: string | null;
+          backdrop_path?: string | null;
           added_at?: string;
           rating?: number | null;
           release_date?: string | null;
