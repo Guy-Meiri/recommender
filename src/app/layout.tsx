@@ -14,7 +14,25 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Batata Time - Movie & TV Recommender",
-  description: "Shared movie and TV show recommendations",
+  description: "Create and share personalized movie and TV show recommendation lists",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: '/logo.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo.png', sizes: '16x16', type: 'image/png' },
+      { url: '/logo.png', sizes: '192x192', type: 'image/png' },
+      { url: '/logo.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/logo.png',
+    apple: [
+      { url: '/logo.png', sizes: '180x180', type: 'image/png' },
+      { url: '/logo.png', sizes: '152x152', type: 'image/png' },
+      { url: '/logo.png', sizes: '120x120', type: 'image/png' },
+    ],
+  },
+  themeColor: '#ff6b35',
+  colorScheme: 'light dark',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 };
 
 export default function RootLayout({

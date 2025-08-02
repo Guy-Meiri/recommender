@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LogOut, Menu, X, Home, User } from 'lucide-react';
+import { LogOut, Menu, X, User } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface AppBarProps {
@@ -24,9 +25,15 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
           {/* Logo/Brand */}
-          <div className="flex items-center space-x-2">
-            <Home className="h-6 w-6" />
-            <span className="font-bold text-lg">Batata Time</span>
+          <div className="flex items-center space-x-3">
+            <Image 
+              src="/logo.png" 
+              alt="Batata Time" 
+              width={40} 
+              height={40}
+              className="rounded-lg"
+            />
+            <span className="font-bold text-xl">Batata Time</span>
           </div>
 
           {/* Desktop Navigation */}
