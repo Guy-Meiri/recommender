@@ -51,13 +51,21 @@ export default function ListPage() {
   const handleAddItem = async (newItem: ListItem) => {
     if (!list) return;
 
-    const success = await supabaseStorage.addItemToList(list.id, newItem);
-    if (success) {
-      // Reload the list to get updated data
-      const updatedList = await supabaseStorage.getList(list.id);
-      if (updatedList) {
-        setList(updatedList);
+    try {
+      const success = await supabaseStorage.addItemToList(list.id, newItem);
+      if (success) {
+        // Reload the list to get updated data
+        const updatedList = await supabaseStorage.getList(list.id);
+        if (updatedList) {
+          setList(updatedList);
+        }
+      } else {
+        console.error('Failed to add item to list');
+        alert('Failed to add item to list. Please try again.');
       }
+    } catch (error) {
+      console.error('Error adding item to list:', error);
+      alert('An error occurred while adding the item. Please try again.');
     }
   };
 
@@ -170,7 +178,6 @@ export default function ListPage() {
         {/* Add Item Button */}
         <div className="flex justify-center">
           <SearchMoviesDialog 
-            listId={list.id}
             category={list.category}
             onItemAdded={handleAddItem}
           >

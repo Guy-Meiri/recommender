@@ -17,16 +17,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Search, Plus, Film, Tv } from 'lucide-react';
 import { TMDBSearchResult, ListItem } from '@/types';
 import { tmdbApi } from '@/lib/tmdb';
-import { supabaseStorage } from '@/lib/supabase-storage';
 
 interface SearchMoviesDialogProps {
-  listId: string;
   category: 'movies' | 'tv' | 'both';
   onItemAdded: (item: ListItem) => void;
   children: React.ReactNode;
 }
 
-export function SearchMoviesDialog({ listId, category, onItemAdded, children }: SearchMoviesDialogProps) {
+export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMoviesDialogProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TMDBSearchResult[]>([]);
@@ -72,18 +70,13 @@ export function SearchMoviesDialog({ listId, category, onItemAdded, children }: 
       addedAt: new Date()
     };
 
-    // Add to Supabase
-    const success = await supabaseStorage.addItemToList(listId, listItem);
-    if (success) {
-      onItemAdded(listItem);
-      setOpen(false);
-      setQuery('');
-      setResults([]);
-      setHasSearched(false);
-      setError(null);
-    } else {
-      setError('Failed to add item to list. Please try again.');
-    }
+    // Let the parent component handle adding to Supabase
+    onItemAdded(listItem);
+    setOpen(false);
+    setQuery('');
+    setResults([]);
+    setHasSearched(false);
+    setError(null);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
