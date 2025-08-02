@@ -95,7 +95,7 @@ export default function Home() {
 
           <div className="flex justify-center">
             <CreateListDialog onListCreated={handleListCreated}>
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">
                 <Plus className="h-5 w-5" />
                 Create New List
               </Button>

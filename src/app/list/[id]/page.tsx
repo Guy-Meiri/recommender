@@ -160,7 +160,7 @@ export default function ListPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button onClick={() => router.push('/')} variant="ghost" size="sm" className="p-2">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-5 w-5 text-orange-500" />
               </Button>
               <h1 className="text-3xl font-bold">{list.name}</h1>
             </div>
@@ -169,7 +169,7 @@ export default function ListPage() {
             {list.isOwner === true && (
               <ShareListDialog list={list} onListUpdated={handleListUpdated}>
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="h-4 w-4 text-orange-500" />
                   Share
                 </Button>
               </ShareListDialog>
@@ -183,7 +183,7 @@ export default function ListPage() {
                 category={list.category}
                 onItemAdded={handleAddItem}
               >
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">
                   <Plus className="h-5 w-5" />
                   Add Movies & TV Shows
                 </Button>
@@ -221,9 +221,9 @@ export default function ListPage() {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             {item.type === 'movie' ? (
-                              <Film className="h-8 w-8 text-muted-foreground" />
+                              <Film className="h-8 w-8 text-orange-500" />
                             ) : (
-                              <Tv className="h-8 w-8 text-muted-foreground" />
+                              <Tv className="h-8 w-8 text-orange-500" />
                             )}
                           </div>
                         )}
@@ -255,9 +255,9 @@ export default function ListPage() {
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           {item.type === 'movie' ? (
-                            <Film className="h-2.5 w-2.5" />
+                            <Film className="h-2.5 w-2.5 text-orange-500" />
                           ) : (
-                            <Tv className="h-2.5 w-2.5" />
+                            <Tv className="h-2.5 w-2.5 text-orange-500" />
                           )}
                           <span className="text-xs">
                             {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
@@ -289,15 +289,15 @@ export default function ListPage() {
                 {/* Sharing Status Badge */}
                 {list.isOwner === false && (
                   <Badge variant="secondary" className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
+                    <Users className="h-3 w-3 text-orange-500" />
                     Shared with you
-                    {list.permission === 'read' && <Lock className="h-3 w-3" />}
+                    {list.permission === 'read' && <Lock className="h-3 w-3 text-orange-500" />}
                   </Badge>
                 )}
                 
                 {list.isOwner === true && list.shares && list.shares.length > 0 && (
                   <Badge variant="default" className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
+                    <Users className="h-3 w-3 text-white" />
                     Shared with {list.shares.length}
                   </Badge>
                 )}
@@ -316,7 +316,7 @@ export default function ListPage() {
               
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-orange-500" />
                   Created {list.createdAt.toLocaleDateString()}
                 </div>
                 <div>

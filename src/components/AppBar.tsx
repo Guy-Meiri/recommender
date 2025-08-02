@@ -45,7 +45,7 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
               alt="Batata Time" 
               width={40} 
               height={40}
-              className="rounded-lg"
+              className="rounded-lg ring-2 ring-orange-500/20"
             />
             <span className="font-bold text-xl">Batata Time</span>
           </div>
@@ -67,18 +67,18 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun className="h-4 w-4" />
+                  <Sun className="h-4 w-4 text-orange-500" />
                   Light
                 </>
               ) : (
                 <>
-                  <Moon className="h-4 w-4" />
+                  <Moon className="h-4 w-4 text-orange-500" />
                   Dark
                 </>
               )}
             </Button>
             <div className="flex items-center space-x-2 text-sm px-3 py-2 rounded-md bg-muted/50">
-              <User className="h-4 w-4" />
+              <User className="h-4 w-4 text-orange-500" />
               <span className="text-muted-foreground">{user.email}</span>
             </div>
             <Button
@@ -87,7 +87,7 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
               onClick={onSignOut}
               className="gap-2 px-3 py-2 h-9 rounded-md hover:bg-accent hover:text-accent-foreground"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4 text-orange-500" />
               Sign Out
             </Button>
           </div>
@@ -131,18 +131,18 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
                 >
                     {theme === 'dark' ? (
                       <>
-                        <Sun className="h-4 w-4" />
+                        <Sun className="h-4 w-4 text-orange-500" />
                         Switch to Light Mode
                       </>
                     ) : (
                       <>
-                        <Moon className="h-4 w-4" />
+                        <Moon className="h-4 w-4 text-orange-500" />
                         Switch to Dark Mode
                       </>
                     )}
                   </Button>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground px-3 py-2 rounded-md bg-muted/30">
-                    <User className="h-4 w-4" />
+                    <User className="h-4 w-4 text-orange-500" />
                     <span>{user.email}</span>
                   </div>
                   <Button
@@ -154,7 +154,7 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
                     }}
                     className="gap-2 w-full justify-start px-3 py-2 h-10 rounded-md hover:bg-accent hover:text-accent-foreground"
                   >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 text-orange-500" />
                   Sign Out
                 </Button>
               </div>

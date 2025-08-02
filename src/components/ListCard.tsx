@@ -14,11 +14,11 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
   const getCategoryIcon = () => {
     switch (list.category) {
       case 'movies':
-        return <Film className="h-4 w-4" />;
+        return <Film className="h-4 w-4 text-orange-500" />;
       case 'tv':
-        return <Tv className="h-4 w-4" />;
+        return <Tv className="h-4 w-4 text-orange-500" />;
       default:
-        return <><Film className="h-3 w-3" /><Tv className="h-3 w-3" /></>;
+        return <><Film className="h-3 w-3 text-orange-500" /><Tv className="h-3 w-3 text-orange-500" /></>;
     }
   };
 
@@ -42,14 +42,14 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
               <CardTitle className="text-lg">{list.name}</CardTitle>
               {list.isOwner === false && (
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                  <Users className="h-3 w-3" />
+                  <Users className="h-3 w-3 text-orange-500" />
                   Shared
-                  {list.permission === 'read' && <Lock className="h-3 w-3" />}
+                  {list.permission === 'read' && <Lock className="h-3 w-3 text-orange-500" />}
                 </Badge>
               )}
               {list.isOwner && list.shares && list.shares.length > 0 && (
                 <Badge variant="default" className="flex items-center gap-1 text-xs">
-                  <Users className="h-3 w-3" />
+                  <Users className="h-3 w-3 text-white" />
                   {list.shares.length}
                 </Badge>
               )}
@@ -93,7 +93,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="h-4 w-4 text-orange-500" />
               <span>{list.createdAt.toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-1">
