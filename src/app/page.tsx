@@ -80,16 +80,6 @@ export default function Home() {
       <AppBar user={user} onSignOut={handleSignOut} />
       <div className="min-h-screen bg-background">
         <main className="container mx-auto px-4 py-8 space-y-8">
-          {/* <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold">
-              Welcome to Batata Time
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Create and manage your personalized movie and TV show recommendation lists. 
-              Share them with friends and discover new content together.
-            </p>
-          </div> */}
-
           <div className="flex justify-center">
             <CreateListDialog>
               <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">

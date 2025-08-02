@@ -14,7 +14,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Share2, UserPlus, Trash2, Mail, Users } from 'lucide-react';
 import { List, UserProfile } from '@/types';
-import { supabaseStorage } from '@/lib/supabase-storage';
+import { useShareListMutation, useUnshareListMutation, useSearchUsersQuery } from '@/lib/api';
 
 interface ShareListDialogProps {
   list: List;
@@ -26,13 +26,20 @@ export function ShareListDialog({ list, children }: ShareListDialogProps) {
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<'read' | 'write'>('write');
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+
+  // RTK Query hooks
+  const [shareList, { isLoading: isSharing }] = useShareListMutation();
+  const [unshareList] = useUnshareListMutation();
+  
+  // For user search, we'll still use the direct supabase call for now since it's not in the main data flow
   const [isSearching, setIsSearching] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
 
   const handleSearchUsers = async (query: string) => {
     setEmail(query);
     if (query.length > 2) {
       setIsSearching(true);
+      // For now, keep direct supabase call for user search since it's a utility function
+      const { supabaseStorage } = await import('@/lib/supabase-storage');
       const results = await supabaseStorage.searchUsers(query);
       setSearchResults(results);
       setIsSearching(false);
@@ -45,25 +52,32 @@ export function ShareListDialog({ list, children }: ShareListDialogProps) {
     const emailToShare = targetEmail || email;
     if (!emailToShare) return;
 
-    setIsSharing(true);
-    const success = await supabaseStorage.shareList(list.id, emailToShare, permission);
-    
-    if (success) {
-      // RTK Query will handle cache updates automatically
+    try {
+      await shareList({ 
+        listId: list.id, 
+        email: emailToShare, 
+        permission 
+      }).unwrap();
+      
+      // RTK Query handles cache updates automatically
       setEmail('');
       setSearchResults([]);
-    } else {
+    } catch (error) {
+      console.error('Share error:', error);
       alert('Failed to share list. Please check the email address and try again.');
     }
-    setIsSharing(false);
   };
 
   const handleUnshare = async (userId: string) => {
-    const success = await supabaseStorage.unshareList(list.id, userId);
-    
-    if (success) {
-      // RTK Query will handle cache updates automatically
-    } else {
+    try {
+      await unshareList({ 
+        listId: list.id, 
+        userId 
+      }).unwrap();
+      
+      // RTK Query handles cache updates automatically
+    } catch (error) {
+      console.error('Unshare error:', error);
       alert('Failed to remove sharing access.');
     }
   };
