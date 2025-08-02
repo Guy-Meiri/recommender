@@ -156,50 +156,164 @@ export default function ListPage() {
       <AppBar user={user} onSignOut={handleSignOut} />
       <div className="min-h-screen bg-background">
         <main className="container mx-auto px-4 py-8 space-y-6">
-          {/* Header */}
-          <div className="space-y-4">
-            <Button onClick={() => router.push('/')} variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Lists
-            </Button>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 flex-wrap">
+          {/* Simplified Header - List name, back button, and share button */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button onClick={() => router.push('/')} variant="ghost" size="sm" className="p-2">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <h1 className="text-3xl font-bold">{list.name}</h1>
-              <Badge variant="outline" className="flex items-center gap-1">
-                {getCategoryIcon()}
-                {getCategoryLabel()}
-              </Badge>
-              
-              {/* Sharing Status Badge */}
-              {list.isOwner === false && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  Shared with you
-                  {list.permission === 'read' && <Lock className="h-3 w-3" />}
-                </Badge>
-              )}
-              
-              {list.isOwner === true && list.shares && list.shares.length > 0 && (
-                <Badge variant="default" className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  Shared with {list.shares.length}
-                </Badge>
-              )}
             </div>
             
-            {/* Owner info for shared lists */}
-            {list.isOwner === false && (
-              <p className="text-sm text-muted-foreground">
-                Created by another user • {list.permission === 'write' ? 'Can edit' : 'View only'}
-              </p>
+            {/* Share Button - Only show for owners */}
+            {list.isOwner === true && (
+              <ShareListDialog list={list} onListUpdated={handleListUpdated}>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
+              </ShareListDialog>
             )}
+          </div>
+
+          {/* Add Item Button - Only show if user has write permission */}
+          {(list.permission === 'write' || list.isOwner === true) && (
+            <div className="flex justify-center">
+              <SearchMoviesDialog 
+                category={list.category}
+                onItemAdded={handleAddItem}
+              >
+                <Button size="lg" className="gap-2">
+                  <Plus className="h-5 w-5" />
+                  Add Movies & TV Shows
+                </Button>
+              </SearchMoviesDialog>
+            </div>
+          )}
+
+          {/* Items Grid */}
+          {list.items.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-muted-foreground">
+                  No items yet
+                </h3>
+                <p className="text-muted-foreground">
+                  Start building your list by adding some movies and TV shows!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
+              {list.items.map((item) => (
+                <Card key={item.id} className="hover:shadow-md transition-shadow group">
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      <div className="aspect-[2/3] bg-muted rounded-t-lg overflow-hidden">
+                        {item.posterPath ? (
+                          <Image
+                            src={tmdbApi.getPosterUrl(item.posterPath)}
+                            alt={item.title}
+                            width={200}
+                            height={300}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            {item.type === 'movie' ? (
+                              <Film className="h-8 w-8 text-muted-foreground" />
+                            ) : (
+                              <Tv className="h-8 w-8 text-muted-foreground" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {/* Remove Button - Only show if user has write permission */}
+                      {(list.permission === 'write' || list.isOwner === true) && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                          onClick={() => handleRemoveItem(item.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                      
+                      {/* Rating Badge */}
+                      {item.rating && item.rating > 0 && (
+                        <div className="absolute top-1 left-1 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                          <Star className="h-2.5 w-2.5 fill-current text-yellow-400" />
+                          {item.rating.toFixed(1)}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-2 space-y-1">
+                      <h4 className="font-medium line-clamp-2 text-xs leading-tight">{item.title}</h4>
+                      
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          {item.type === 'movie' ? (
+                            <Film className="h-2.5 w-2.5" />
+                          ) : (
+                            <Tv className="h-2.5 w-2.5" />
+                          )}
+                          <span className="text-xs">
+                            {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
+                          </span>
+                        </div>
+                        
+                        <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
+                          {item.type === 'movie' ? 'Movie' : 'TV'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Details Section - Moved to bottom */}
+          <div className="border-t pt-6 mt-8 space-y-4">
+            <h2 className="text-lg font-semibold">List Details</h2>
             
-            {list.description && (
-              <p className="text-muted-foreground text-lg">{list.description}</p>
-            )}
-            
-            <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  {getCategoryIcon()}
+                  {getCategoryLabel()}
+                </Badge>
+                
+                {/* Sharing Status Badge */}
+                {list.isOwner === false && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    Shared with you
+                    {list.permission === 'read' && <Lock className="h-3 w-3" />}
+                  </Badge>
+                )}
+                
+                {list.isOwner === true && list.shares && list.shares.length > 0 && (
+                  <Badge variant="default" className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    Shared with {list.shares.length}
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Owner info for shared lists */}
+              {list.isOwner === false && (
+                <p className="text-sm text-muted-foreground">
+                  Created by another user • {list.permission === 'write' ? 'Can edit' : 'View only'}
+                </p>
+              )}
+              
+              {list.description && (
+                <p className="text-muted-foreground">{list.description}</p>
+              )}
+              
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
@@ -209,118 +323,8 @@ export default function ListPage() {
                   {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
                 </div>
               </div>
-              
-              {/* Share Button - Only show for owners */}
-              {list.isOwner === true && (
-                <ShareListDialog list={list} onListUpdated={handleListUpdated}>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
-                    <Share2 className="h-4 w-4" />
-                    Share
-                  </Button>
-                </ShareListDialog>
-              )}
             </div>
           </div>
-        </div>
-
-        {/* Add Item Button - Only show if user has write permission */}
-        {(list.permission === 'write' || list.isOwner === true) && (
-          <div className="flex justify-center">
-            <SearchMoviesDialog 
-              category={list.category}
-              onItemAdded={handleAddItem}
-            >
-              <Button size="lg" className="gap-2">
-                <Plus className="h-5 w-5" />
-                Add Movies & TV Shows
-              </Button>
-            </SearchMoviesDialog>
-          </div>
-        )}
-
-        {/* Items Grid */}
-        {list.items.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-muted-foreground">
-                No items yet
-              </h3>
-              <p className="text-muted-foreground">
-                Start building your list by adding some movies and TV shows!
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8">
-            {list.items.map((item) => (
-              <Card key={item.id} className="hover:shadow-md transition-shadow group">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <div className="aspect-[2/3] bg-muted rounded-t-lg overflow-hidden">
-                      {item.posterPath ? (
-                        <Image
-                          src={tmdbApi.getPosterUrl(item.posterPath)}
-                          alt={item.title}
-                          width={200}
-                          height={300}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          {item.type === 'movie' ? (
-                            <Film className="h-8 w-8 text-muted-foreground" />
-                          ) : (
-                            <Tv className="h-8 w-8 text-muted-foreground" />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {/* Remove Button - Only show if user has write permission */}
-                    {(list.permission === 'write' || list.isOwner === true) && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
-                        onClick={() => handleRemoveItem(item.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
-                    
-                    {/* Rating Badge */}
-                    {item.rating && item.rating > 0 && (
-                      <div className="absolute top-1 left-1 bg-black/80 text-white px-1.5 py-0.5 rounded text-xs font-medium flex items-center gap-1">
-                        <Star className="h-2.5 w-2.5 fill-current text-yellow-400" />
-                        {item.rating.toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-2 space-y-1">
-                    <h4 className="font-medium line-clamp-2 text-xs leading-tight">{item.title}</h4>
-                    
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        {item.type === 'movie' ? (
-                          <Film className="h-2.5 w-2.5" />
-                        ) : (
-                          <Tv className="h-2.5 w-2.5" />
-                        )}
-                        <span className="text-xs">
-                          {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
-                        </span>
-                      </div>
-                      
-                      <Badge variant="secondary" className="text-xs px-1 py-0 h-4">
-                        {item.type === 'movie' ? 'Movie' : 'TV'}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
         </main>
       </div>
     </>
