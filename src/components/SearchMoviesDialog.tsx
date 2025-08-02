@@ -29,18 +29,24 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
   const [results, setResults] = useState<TMDBSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
 
     setIsSearching(true);
+    setError(null);
     try {
+      console.log('Starting search for:', query.trim());
       const response = await tmdbApi.search(query.trim());
+      console.log('Search response:', response);
       setResults(response.results);
       setHasSearched(true);
     } catch (error) {
       console.error('Search error:', error);
+      setError('Failed to search. Please try again.');
       setResults([]);
+      setHasSearched(true);
     } finally {
       setIsSearching(false);
     }
@@ -64,6 +70,7 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
     setQuery('');
     setResults([]);
     setHasSearched(false);
+    setError(null);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -72,8 +79,19 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen) {
+      // Reset state when opening
+      setQuery('');
+      setResults([]);
+      setHasSearched(false);
+      setError(null);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -105,9 +123,16 @@ export function SearchMoviesDialog({ onAddItem, children }: SearchMoviesDialogPr
             </div>
           )}
 
-          {hasSearched && !isSearching && results.length === 0 && (
+          {hasSearched && !isSearching && results.length === 0 && !error && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No results found. Try a different search term.</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+              <p className="text-muted-foreground text-sm mt-2">Check the browser console for more details.</p>
             </div>
           )}
 

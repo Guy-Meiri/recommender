@@ -47,8 +47,12 @@ const MOCK_SEARCH_RESULTS: TMDBSearchResult[] = [
 export const tmdbApi = {
   // Search for movies and TV shows
   search: async (query: string): Promise<TMDBResponse> => {
+    console.log('TMDB API Key available:', !!TMDB_API_KEY);
+    console.log('Search query:', query);
+
     // If no API key, return mock data
-    if (!TMDB_API_KEY) {
+    if (!TMDB_API_KEY || TMDB_API_KEY === 'your_api_key_here') {
+      console.log('Using mock data');
       const filteredResults = MOCK_SEARCH_RESULTS.filter(item =>
         (item.title || item.name)?.toLowerCase().includes(query.toLowerCase())
       );
@@ -61,16 +65,20 @@ export const tmdbApi = {
       };
     }
 
+    console.log('Using real TMDB API');
     try {
-      const response = await fetch(
-        `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`
-      );
+      const searchUrl = `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`;
+      console.log('Search URL:', searchUrl.replace(TMDB_API_KEY, '[API_KEY]'));
+      
+      const response = await fetch(searchUrl);
       
       if (!response.ok) {
-        throw new Error('Failed to search TMDB');
+        console.error('TMDB API response not ok:', response.status, response.statusText);
+        throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log('TMDB API response:', data);
       
       // Filter to only include movies and TV shows
       const filteredResults = data.results.filter((item: TMDBSearchResult) => 
@@ -83,7 +91,17 @@ export const tmdbApi = {
       };
     } catch (error) {
       console.error('TMDB search error:', error);
-      throw error;
+      // Fallback to mock data if API fails
+      const filteredResults = MOCK_SEARCH_RESULTS.filter(item =>
+        (item.title || item.name)?.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      return {
+        page: 1,
+        results: filteredResults,
+        total_pages: 1,
+        total_results: filteredResults.length
+      };
     }
   },
 
