@@ -17,25 +17,65 @@ function ConfirmContent() {
   useEffect(() => {
     const confirmUser = async () => {
       try {
-        // Get the token and type from URL parameters
+        // Handle both old-style token confirmation and new-style code confirmation
         const token = searchParams.get('token');
+        const tokenHash = searchParams.get('token_hash');
         const type = searchParams.get('type');
+        const code = searchParams.get('code');
 
-        if (!token || type !== 'signup') {
-          throw new Error('Invalid confirmation link');
+        console.log('🔐 Confirmation attempt:', { token, tokenHash, type, code });
+
+        // If we have a code parameter, redirect to the callback route
+        if (code) {
+          console.log('🔄 Redirecting to callback route for code-based confirmation');
+          const callbackUrl = `/auth/callback?code=${code}`;
+          router.replace(callbackUrl);
+          return;
         }
 
-        // Verify the token with Supabase
-        const { error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: 'signup'
-        });
+        // Handle old-style token confirmation
+        if (token && type === 'signup') {
+          console.log('🔐 Using legacy token confirmation');
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'signup'
+          });
 
-        if (error) {
-          throw error;
+          if (error) throw error;
+        } 
+        // Handle token hash confirmation
+        else if (tokenHash && type === 'signup') {
+          console.log('🔐 Using token hash confirmation');
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'signup'
+          });
+
+          if (error) throw error;
+        } 
+        // Handle URL fragment (old-style links)
+        else if (window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            console.log('🔐 Using hash-based tokens');
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (error) throw error;
+          } else {
+            throw new Error('No valid confirmation parameters found');
+          }
+        } else {
+          throw new Error('Invalid confirmation link - no valid parameters found');
         }
 
         setConfirmed(true);
+        console.log('✅ Email confirmation successful');
         
         // Redirect to home page after a short delay
         setTimeout(() => {
@@ -43,7 +83,7 @@ function ConfirmContent() {
         }, 2000);
 
       } catch (err) {
-        console.error('Confirmation error:', err);
+        console.error('❌ Confirmation error:', err);
         setError(err instanceof Error ? err.message : 'Failed to confirm email');
       } finally {
         setLoading(false);
