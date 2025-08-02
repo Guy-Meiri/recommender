@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { List } from '@/types';
-import { Calendar, Film, Tv, Users, Lock } from 'lucide-react';
+import { Calendar, Film, Tv, Users, Lock, Trash2, Eye } from 'lucide-react';
 
 interface ListCardProps {
   list: List;
@@ -39,7 +39,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <CardTitle className="text-lg">{list.name}</CardTitle>
+              <CardTitle className="text-lg text-orange-600">{list.name}</CardTitle>
               {list.isOwner === false && (
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Users className="h-3 w-3 text-orange-500" />
@@ -74,20 +74,21 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="gap-1 px-2"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteList(list.id);
                 }}
               >
-                Delete
+                <Trash2 className="h-3 w-3 text-red-500" />
               </Button>
             )}
             <Button
               size="sm"
-              className={list.isOwner === true ? "flex-1" : "w-full"}
+              className={`gap-1 bg-orange-500 hover:bg-orange-600 text-white ${list.isOwner === true ? "flex-1" : "w-full"}`}
               onClick={() => onViewList(list.id)}
             >
+              <Eye className="h-3 w-3" />
               View List
             </Button>
           </div>
