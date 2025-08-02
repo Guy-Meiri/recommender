@@ -233,6 +233,14 @@ export default function ListPage() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
+                    
+                    {/* Rating Badge */}
+                    {item.rating && item.rating > 0 && (
+                      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                        <Star className="h-3 w-3 fill-current text-yellow-400" />
+                        {item.rating.toFixed(1)}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-4 space-y-2">
@@ -248,12 +256,9 @@ export default function ListPage() {
                         {item.releaseDate ? new Date(item.releaseDate).getFullYear() : 'Unknown'}
                       </div>
                       
-                      {item.rating && item.rating > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current text-yellow-500" />
-                          {item.rating.toFixed(1)}
-                        </div>
-                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {item.type === 'movie' ? 'Movie' : 'TV Show'}
+                      </Badge>
                     </div>
                   </div>
                 </CardContent>

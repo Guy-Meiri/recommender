@@ -28,7 +28,10 @@ function convertDbItemToListItem(dbItem: ListItemRow): ListItem {
     type: dbItem.media_type,
     title: dbItem.title,
     posterPath: dbItem.poster_path || undefined,
-    addedAt: new Date(dbItem.added_at)
+    addedAt: new Date(dbItem.added_at),
+    rating: dbItem.rating || undefined,
+    releaseDate: dbItem.release_date || undefined,
+    genre: dbItem.genre || []
   };
 }
 
@@ -48,7 +51,10 @@ export const supabaseStorage = {
           title,
           media_type,
           poster_path,
-          added_at
+          added_at,
+          rating,
+          release_date,
+          genre
         )
       `)
       .eq('user_id', user.id)
@@ -80,7 +86,10 @@ export const supabaseStorage = {
           title,
           media_type,
           poster_path,
-          added_at
+          added_at,
+          rating,
+          release_date,
+          genre
         )
       `)
       .eq('id', listId)
@@ -184,7 +193,10 @@ export const supabaseStorage = {
       tmdb_id: item.tmdbId,
       title: item.title,
       media_type: item.type,
-      poster_path: item.posterPath || null
+      poster_path: item.posterPath || null,
+      rating: item.rating || null,
+      release_date: item.releaseDate || null,
+      genre: item.genre || null
     };
 
     const { error } = await supabase

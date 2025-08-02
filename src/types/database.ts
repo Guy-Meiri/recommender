@@ -36,6 +36,9 @@ export interface Database {
           media_type: 'movie' | 'tv';
           poster_path: string | null;
           added_at: string;
+          rating: number | null;
+          release_date: string | null;
+          genre: string[] | null;
         };
         Insert: {
           id?: string;
@@ -45,6 +48,9 @@ export interface Database {
           media_type: 'movie' | 'tv';
           poster_path?: string | null;
           added_at?: string;
+          rating?: number | null;
+          release_date?: string | null;
+          genre?: string[] | null;
         };
         Update: {
           id?: string;
@@ -54,6 +60,9 @@ export interface Database {
           media_type?: 'movie' | 'tv';
           poster_path?: string | null;
           added_at?: string;
+          rating?: number | null;
+          release_date?: string | null;
+          genre?: string[] | null;
         };
       };
     };
