@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star, Share2, Users, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Film, Tv, Calendar, Star, Share2, Users, Lock, Loader2 } from 'lucide-react';
 import { List, ListItem } from '@/types';
 import { supabaseStorage } from '@/lib/supabase-storage';
 import { supabase } from '@/lib/supabase';
@@ -25,6 +25,8 @@ export default function ListPage() {
   const [user, setUser] = useState<User | null>(null);
   const [list, setList] = useState<List | null>(null);
   const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
+  const [addingItem, setAddingItem] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -40,10 +42,13 @@ export default function ListPage() {
     if (user && listId) {
       const loadListData = async () => {
         try {
+          setListLoading(true);
           const foundList = await supabaseStorage.getList(listId);
           setList(foundList);
         } catch (error) {
           console.error('Error loading list:', error);
+        } finally {
+          setListLoading(false);
         }
       };
       loadListData();
@@ -54,6 +59,7 @@ export default function ListPage() {
     if (!list) return;
 
     try {
+      setAddingItem(true);
       const success = await supabaseStorage.addItemToList(list.id, newItem);
       if (success) {
         // Reload the list to get updated data
@@ -61,13 +67,11 @@ export default function ListPage() {
         if (updatedList) {
           setList(updatedList);
         }
-      } else {
-        console.error('Failed to add item to list');
-        alert('Failed to add item to list. Please try again.');
       }
     } catch (error) {
-      console.error('Error adding item to list:', error);
-      alert('An error occurred while adding the item. Please try again.');
+      console.error('Error adding item:', error);
+    } finally {
+      setAddingItem(false);
     }
   };
 
@@ -137,6 +141,17 @@ export default function ListPage() {
     return <Auth onAuthStateChange={setUser} />;
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-500 mx-auto" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!list) {
     return (
       <div className="min-h-screen p-8 bg-background">
@@ -183,16 +198,32 @@ export default function ListPage() {
                 category={list.category}
                 onItemAdded={handleAddItem}
               >
-                <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white">
-                  <Plus className="h-5 w-5" />
-                  Add Movies & TV Shows
+                <Button size="lg" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white" disabled={addingItem}>
+                  {addingItem ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-5 w-5" />
+                      Add Movies & TV Shows
+                    </>
+                  )}
                 </Button>
               </SearchMoviesDialog>
             </div>
           )}
 
           {/* Items Grid */}
-          {list.items.length === 0 ? (
+          {listLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500 mx-auto" />
+                <p className="text-muted-foreground">Loading list items...</p>
+              </div>
+            </div>
+          ) : list.items.length === 0 ? (
             <div className="text-center py-12">
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-muted-foreground">

@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Plus, Film, Tv } from 'lucide-react';
+import { Search, Plus, Film, Tv, Loader2 } from 'lucide-react';
 import { TMDBSearchResult, ListItem } from '@/types';
 import { tmdbApi } from '@/lib/tmdb';
 
@@ -30,6 +30,7 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
   const [results, setResults] = useState<TMDBSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [addingItems, setAddingItems] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async () => {
@@ -58,25 +59,39 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
     if (category === 'movies' && tmdbItem.media_type !== 'movie') return;
     if (category === 'tv' && tmdbItem.media_type !== 'tv') return;
 
-    const listItem: ListItem = {
-      id: crypto.randomUUID(),
-      tmdbId: tmdbItem.id,
-      type: tmdbItem.media_type,
-      title: tmdbItem.title || tmdbItem.name || 'Unknown Title',
-      posterPath: tmdbItem.poster_path,
-      releaseDate: tmdbItem.release_date || tmdbItem.first_air_date,
-      rating: tmdbItem.vote_average,
-      genre: [], // We'll populate this later if needed
-      addedAt: new Date()
-    };
+    const itemId = tmdbItem.id.toString();
+    setAddingItems(prev => new Set(prev).add(itemId));
 
-    // Let the parent component handle adding to Supabase
-    onItemAdded(listItem);
-    setOpen(false);
-    setQuery('');
-    setResults([]);
-    setHasSearched(false);
-    setError(null);
+    try {
+      const listItem: ListItem = {
+        id: crypto.randomUUID(),
+        tmdbId: tmdbItem.id,
+        type: tmdbItem.media_type,
+        title: tmdbItem.title || tmdbItem.name || 'Unknown Title',
+        posterPath: tmdbItem.poster_path,
+        releaseDate: tmdbItem.release_date || tmdbItem.first_air_date,
+        rating: tmdbItem.vote_average,
+        genre: [], // We'll populate this later if needed
+        addedAt: new Date()
+      };
+
+      // Let the parent component handle adding to Supabase
+      await onItemAdded(listItem);
+      setOpen(false);
+      setQuery('');
+      setResults([]);
+      setHasSearched(false);
+      setError(null);
+    } catch (error) {
+      console.error('Error adding item:', error);
+      setError('Failed to add item. Please try again.');
+    } finally {
+      setAddingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(itemId);
+        return newSet;
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -118,14 +133,21 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
             disabled={isSearching}
           />
           <Button onClick={handleSearch} disabled={isSearching || !query.trim()}>
-            <Search className="h-4 w-4" />
+            {isSearching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Search className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
           {isSearching && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Searching...</p>
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-6 w-6 animate-spin text-orange-500 mx-auto" />
+                <p className="text-muted-foreground">Searching...</p>
+              </div>
             </div>
           )}
 
@@ -188,8 +210,16 @@ export function SearchMoviesDialog({ category, onItemAdded, children }: SearchMo
                                 <><Tv className="h-3 w-3 mr-1" />TV Show</>
                               )}
                             </Badge>
-                            <Button size="sm" onClick={() => handleAddItem(item)}>
-                              <Plus className="h-4 w-4" />
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddItem(item)}
+                              disabled={addingItems.has(item.id.toString())}
+                            >
+                              {addingItems.has(item.id.toString()) ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Plus className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </div>

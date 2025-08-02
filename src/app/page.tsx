@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { List } from '@/types';
 import { supabaseStorage } from '@/lib/supabase-storage';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +16,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [lists, setLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listsLoading, setListsLoading] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -38,10 +39,13 @@ export default function Home() {
 
   const loadLists = async () => {
     try {
+      setListsLoading(true);
       const storedLists = await supabaseStorage.getLists();
       setLists(storedLists);
     } catch (error) {
       console.error('Error loading lists:', error);
+    } finally {
+      setListsLoading(false);
     }
   };
 
@@ -102,7 +106,7 @@ export default function Home() {
             </CreateListDialog>
           </div>
 
-          {lists.length === 0 ? (
+          {lists.length === 0 && !listsLoading ? (
             <div className="text-center py-12">
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-muted-foreground">
@@ -111,6 +115,13 @@ export default function Home() {
                 <p className="text-muted-foreground">
                   Create your first watch list to get started!
                 </p>
+              </div>
+            </div>
+          ) : listsLoading ? (
+            <div className="text-center py-12">
+              <div className="space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto text-orange-500" />
+                <p className="text-muted-foreground">Loading your lists...</p>
               </div>
             </div>
           ) : (
