@@ -24,16 +24,16 @@ To complete the setup, you need to configure the authentication URLs in your Sup
 
 ### 2. Configure Site URL
 Set your **Site URL** to:
-- **Development**: `http://localhost:3002` (or whatever port you're using)
-- **Production**: `https://your-domain.com`
+- **Development**: `http://localhost:3000` (or whatever port you're using)
+- **Production**: `https://recommender-eight.vercel.app`
 
 ### 3. Configure Redirect URLs
 Add these **Redirect URLs** (one per line):
 ```
-http://localhost:3002/auth/confirm
-http://localhost:3002/auth/callback
-https://your-domain.com/auth/confirm
-https://your-domain.com/auth/callback
+http://localhost:3000/auth/confirm
+http://localhost:3000/auth/callback
+https://recommender-eight.vercel.app/auth/confirm
+https://recommender-eight.vercel.app/auth/callback
 ```
 
 ### 4. **IMPORTANT: Enable Email Confirmation**
@@ -86,7 +86,7 @@ https://your-domain.com/auth/callback
    ```
 
 2. **Test signup flow**:
-   - Go to http://localhost:3001
+   - Go to http://localhost:3000
    - Click "Don't have an account? Sign up"
    - Enter email and password
    - Check your email for confirmation link
@@ -99,8 +99,10 @@ https://your-domain.com/auth/callback
 ## Production Deployment
 
 When deploying to production:
-1. Update the **Site URL** in Supabase to your production domain
-2. Add your production domain to the **Redirect URLs** list
+1. Update the **Site URL** in Supabase to `https://recommender-eight.vercel.app`
+2. Add your production domain to the **Redirect URLs** list:
+   - `https://recommender-eight.vercel.app/auth/confirm`
+   - `https://recommender-eight.vercel.app/auth/callback`
 3. The app will automatically use the correct domain for email redirects
 
 ## Troubleshooting
