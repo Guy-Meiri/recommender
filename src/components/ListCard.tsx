@@ -52,20 +52,12 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {list.createdAt.toLocaleDateString()}
-            </div>
-            <div>
-              {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
-            </div>
-          </div>
-          <div className="flex gap-2 justify-end sm:justify-start">
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2 w-full">
             <Button
               variant="outline"
               size="sm"
+              className="flex-1"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteList(list.id);
@@ -75,10 +67,20 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
             </Button>
             <Button
               size="sm"
+              className="flex-1"
               onClick={() => onViewList(list.id)}
             >
               View List
             </Button>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              {list.createdAt.toLocaleDateString()}
+            </div>
+            <div>
+              {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
+            </div>
           </div>
         </div>
       </CardContent>
