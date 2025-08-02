@@ -162,7 +162,7 @@ export default function ListPage() {
               <Button onClick={() => router.push('/')} variant="ghost" size="sm" className="p-2">
                 <ArrowLeft className="h-5 w-5 text-orange-500" />
               </Button>
-              <h1 className="text-3xl font-bold">{list.name}</h1>
+              <h1 className="text-2xl font-bold">{list.name}</h1>
             </div>
             
             {/* Share Button - Only show for owners */}

@@ -39,7 +39,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <CardTitle className="text-lg text-orange-600">{list.name}</CardTitle>
+              <CardTitle className="text-lg text-white">{list.name}</CardTitle>
               {list.isOwner === false && (
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Users className="h-3 w-3 text-orange-500" />
@@ -80,7 +80,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
                   onDeleteList(list.id);
                 }}
               >
-                <Trash2 className="h-3 w-3 text-red-500" />
+                <Trash2 className="h-3 w-3 text-red-400" />
               </Button>
             )}
             <Button
