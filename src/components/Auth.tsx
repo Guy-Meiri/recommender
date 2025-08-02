@@ -38,6 +38,9 @@ export function Auth({ onAuthStateChange }: AuthProps) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/confirm`
+          }
         });
         if (error) throw error;
         setMessage('Check your email for the confirmation link!');
