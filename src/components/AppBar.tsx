@@ -2,8 +2,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { LogOut, Menu, X, User } from 'lucide-react';
+import { LogOut, Menu, X, User, Sun, Moon } from 'lucide-react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
+import { useTheme } from 'next-themes';
 
 interface AppBarProps {
   user: SupabaseUser | null;
@@ -12,9 +13,14 @@ interface AppBarProps {
 
 export function AppBar({ user, onSignOut }: AppBarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   if (!user) return null;
@@ -45,6 +51,24 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4 ml-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="gap-2"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="h-4 w-4" />
+                  Light
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" />
+                  Dark
+                </>
+              )}
+            </Button>
             <div className="flex items-center space-x-2 text-sm">
               <User className="h-4 w-4" />
               <span className="text-muted-foreground">{user.email}</span>
@@ -91,6 +115,24 @@ export function AppBar({ user, onSignOut }: AppBarProps) {
               </div>
               
               <div className="border-t pt-4 space-y-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="gap-2 w-full justify-start"
+                >
+                  {theme === 'dark' ? (
+                    <>
+                      <Sun className="h-4 w-4" />
+                      Switch to Light Mode
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="h-4 w-4" />
+                      Switch to Dark Mode
+                    </>
+                  )}
+                </Button>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
                   <span>{user.email}</span>
