@@ -34,39 +34,36 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer w-full max-w-sm">
+    <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer w-full max-w-sm group">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg">{list.name}</CardTitle>
+          <div className="space-y-2 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <CardTitle className="text-lg">{list.name}</CardTitle>
+              {!list.isOwner && (
+                <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                  <Users className="h-3 w-3" />
+                  Shared
+                  {list.permission === 'read' && <Lock className="h-3 w-3" />}
+                </Badge>
+              )}
+              {list.isOwner && list.shares && list.shares.length > 0 && (
+                <Badge variant="default" className="flex items-center gap-1 text-xs">
+                  <Users className="h-3 w-3" />
+                  {list.shares.length}
+                </Badge>
+              )}
+            </div>
             {list.description && (
-              <CardDescription className="text-sm">
+              <CardDescription className="text-sm line-clamp-2">
                 {list.description}
               </CardDescription>
             )}
           </div>
-          <div className="flex flex-col gap-1 items-end">
-            <Badge variant="outline" className="flex items-center gap-1">
-              {getCategoryIcon()}
-              {getCategoryLabel()}
-            </Badge>
-            
-            {/* Sharing Status */}
-            {!list.isOwner && (
-              <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                <Users className="h-3 w-3" />
-                Shared
-                {list.permission === 'read' && <Lock className="h-3 w-3" />}
-              </Badge>
-            )}
-            
-            {list.isOwner && list.shares && list.shares.length > 0 && (
-              <Badge variant="default" className="flex items-center gap-1 text-xs">
-                <Users className="h-3 w-3" />
-                {list.shares.length}
-              </Badge>
-            )}
-          </div>
+          <Badge variant="outline" className="flex items-center gap-1 ml-2">
+            {getCategoryIcon()}
+            <span className="hidden sm:inline">{getCategoryLabel()}</span>
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -77,7 +74,7 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1"
+                className="flex-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteList(list.id);
@@ -94,13 +91,14 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
               View List
             </Button>
           </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
-              {list.createdAt.toLocaleDateString()}
+              <span>{list.createdAt.toLocaleDateString()}</span>
             </div>
-            <div>
-              {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
+            <div className="flex items-center gap-1">
+              <span className="font-medium">{list.items.length}</span>
+              <span>{list.items.length === 1 ? 'item' : 'items'}</span>
             </div>
           </div>
         </div>

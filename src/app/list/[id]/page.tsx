@@ -15,6 +15,7 @@ import { tmdbApi } from '@/lib/tmdb';
 import { SearchMoviesDialog } from '@/components/SearchMoviesDialog';
 import { ShareListDialog } from '@/components/ShareListDialog';
 import { Auth } from '@/components/Auth';
+import { AppBar } from '@/components/AppBar';
 
 export default function ListPage() {
   const params = useParams();
@@ -93,6 +94,11 @@ export default function ListPage() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
   const getCategoryIcon = () => {
     if (!list) return null;
 
@@ -146,14 +152,16 @@ export default function ListPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 bg-background">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="space-y-4">
-          <Button onClick={() => router.push('/')} variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Lists
-          </Button>
+    <>
+      <AppBar user={user} onSignOut={handleSignOut} />
+      <div className="min-h-screen bg-background">
+        <main className="container mx-auto px-4 py-8 space-y-6">
+          {/* Header */}
+          <div className="space-y-4">
+            <Button onClick={() => router.push('/')} variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Lists
+            </Button>
 
           <div className="space-y-2">
             <div className="flex items-center gap-3 flex-wrap">
@@ -313,7 +321,8 @@ export default function ListPage() {
             ))}
           </div>
         )}
+        </main>
       </div>
-    </div>
+    </>
   );
 }
