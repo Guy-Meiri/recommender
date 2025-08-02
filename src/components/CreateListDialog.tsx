@@ -64,7 +64,7 @@ export function CreateListDialog({ onListCreated, children }: CreateListDialogPr
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] w-[95vw]">
+      <DialogContent className="sm:max-w-[500px] max-w-[95vw]">
         <DialogHeader>
           <DialogTitle>Create New List</DialogTitle>
           <DialogDescription>
