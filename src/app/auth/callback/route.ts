@@ -4,7 +4,18 @@ import { createClient } from '@supabase/supabase-js';
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
+  const error = searchParams.get('error');
   const next = searchParams.get('next') ?? '/';
+
+  console.log('🔐 Callback route called:', { code: !!code, error, hasHash: request.url.includes('#') });
+
+  // If there's an error parameter, redirect to error page
+  if (error) {
+    console.error('❌ OAuth error:', error);
+    const errorUrl = new URL('/auth/auth-code-error', request.url);
+    errorUrl.searchParams.set('error', error);
+    return NextResponse.redirect(errorUrl);
+  }
 
   if (code) {
     try {
@@ -36,8 +47,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // No code provided - redirect to error page
-  console.error('❌ No confirmation code provided');
+  // Check if URL contains hash fragment (old-style confirmation)
+  // Since we can't access hash from server-side, redirect to confirm page to handle it
+  if (request.url.includes('#') || (!code && !error)) {
+    console.log('🔄 No code parameter, redirecting to confirm page to handle hash tokens');
+    return NextResponse.redirect(new URL('/auth/confirm', request.url));
+  }
+
+  // No code provided and no hash - redirect to error page
+  console.error('❌ No confirmation code or hash provided');
   const errorUrl = new URL('/auth/auth-code-error', request.url);
   errorUrl.searchParams.set('error', 'Invalid confirmation link');
   return NextResponse.redirect(errorUrl);

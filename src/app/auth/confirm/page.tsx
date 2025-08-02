@@ -24,6 +24,7 @@ function ConfirmContent() {
         const code = searchParams.get('code');
 
         console.log('🔐 Confirmation attempt:', { token, tokenHash, type, code });
+        console.log('🔐 URL hash:', window.location.hash);
 
         // If we have a code parameter, redirect to the callback route
         if (code) {
@@ -31,6 +32,35 @@ function ConfirmContent() {
           const callbackUrl = `/auth/callback?code=${code}`;
           router.replace(callbackUrl);
           return;
+        }
+
+        // Handle URL fragment (hash-based tokens) - this is what Supabase is currently sending
+        if (window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          const hashType = hashParams.get('type');
+          
+          console.log('🔐 Hash params:', { accessToken: !!accessToken, refreshToken: !!refreshToken, hashType });
+          
+          if (accessToken && refreshToken && hashType === 'signup') {
+            console.log('🔐 Using hash-based tokens for signup confirmation');
+            const { error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken
+            });
+            
+            if (error) throw error;
+            
+            setConfirmed(true);
+            console.log('✅ Email confirmation successful via hash tokens');
+            
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+              router.push('/');
+            }, 2000);
+            return;
+          }
         }
 
         // Handle old-style token confirmation
@@ -52,26 +82,8 @@ function ConfirmContent() {
           });
 
           if (error) throw error;
-        } 
-        // Handle URL fragment (old-style links)
-        else if (window.location.hash) {
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const refreshToken = hashParams.get('refresh_token');
-          
-          if (accessToken && refreshToken) {
-            console.log('🔐 Using hash-based tokens');
-            const { error } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken
-            });
-            
-            if (error) throw error;
-          } else {
-            throw new Error('No valid confirmation parameters found');
-          }
         } else {
-          throw new Error('Invalid confirmation link - no valid parameters found');
+          throw new Error('No valid confirmation parameters found');
         }
 
         setConfirmed(true);
