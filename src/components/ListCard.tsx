@@ -54,11 +54,9 @@ export function ListCard({ list, onViewList, onDeleteList }: ListCardProps) {
                 </Badge>
               )}
             </div>
-            {list.description && (
-              <CardDescription className="text-sm line-clamp-2">
-                {list.description}
-              </CardDescription>
-            )}
+            <CardDescription className="text-sm line-clamp-2 min-h-[2.5rem] flex items-start">
+              {list.description || '\u00A0'}
+            </CardDescription>
           </div>
           <Badge variant="outline" className="flex items-center gap-1 ml-2">
             {getCategoryIcon()}
