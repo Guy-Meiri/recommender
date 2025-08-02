@@ -1,4 +1,4 @@
-# Movie & TV Show Recommender App - Specification
+# Batata Time - Movie & TV Show Recommender App - Specification
 
 ## Overview
 A web application for creating and managing personalized movie and TV show recommendation lists.

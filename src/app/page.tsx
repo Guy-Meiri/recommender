@@ -59,7 +59,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto space-y-8">
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold">
-            Movie & TV Recommender
+            Batata Time
           </h1>
           <p className="text-muted-foreground text-lg">
             Create and manage your personalized movie and TV show recommendation lists
